@@ -1,20 +1,41 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+// import * as React from "react";
+// import { PaperProvider } from "react-native-paper";
+// import RootNavigator from "./src/routes/Router";
+// import { AuthProvider } from "./utils/AuthProvider";
+
+// export default function App() {
+//   return (
+//     <PaperProvider>
+//       <AuthProvider>
+//         <RootNavigator />
+//       </AuthProvider>
+//     </PaperProvider>
+//   );
+// }
+
+import { StyleSheet, Text, View } from "react-native";
+import { UserProvider } from "./contexts/UserContext";
+import { IdeasProvider } from "./contexts/SurveyContext"; // Add import
+import { CallerPrvoider } from "./contexts/CallerContext";
+import { Router } from "./lib/Router";
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <UserProvider>
+      <IdeasProvider>
+        <CallerPrvoider>
+          <Router />
+        </CallerPrvoider>
+      </IdeasProvider>
+    </UserProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });

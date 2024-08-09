@@ -1,0 +1,24 @@
+[
+  {
+    "id": 1,
+    "name": "division name",
+    "wards": [
+      {
+        "id": 1,
+        "name": "ward name",
+        "areas": [
+          {
+            "id": 1,
+            "name": "area name",
+            "buildings": [
+              {
+                "id": 1,
+                "name": "building name"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
