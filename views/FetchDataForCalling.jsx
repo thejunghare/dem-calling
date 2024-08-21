@@ -11,8 +11,9 @@ import { useCaller } from "../contexts/CallerContext";
 import { Button, Checkbox } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 
-export default function DataFetchingScreen({ navigation }) {
-  const { fetch, documents, details } = useCaller();
+export default function DataFetchingScreen({ navigation, route }) {
+  const { employeeId } = route.params;
+  const { fetch, documents, details, count } = useCaller();
   const [division, setDivision] = useState("");
   const [ward, setWard] = useState("");
   const [area, setArea] = useState("");
@@ -66,16 +67,20 @@ export default function DataFetchingScreen({ navigation }) {
 
   const renderItem = ({ item }) => {
     return (
-      <View className="m-3">
+      <View className="border rounded-md m-3">
         {documents && documents.length > 0 ? (
           documents.map((document) => (
-            <TouchableOpacity onPress={() => details(document.$id, navigation)}>
+            <TouchableOpacity
+              onPress={() =>
+                details(document.$id, navigation, { employeeId: employeeId })
+              }
+            >
               <Text
-                className={`font-semibold text-base p-3 my-3 rounded-md ${
+                className={`border rounded-md font-semibold text-base p-3 m-3 ${
                   document.verification === false
-                    ? "bg-red-500"
+                    ? "bg-red-500 text-white"
                     : document.verification === true
-                      ? "bg-green-500"
+                      ? "bg-green-500 text-white"
                       : "bg-white"
                 }`}
                 key={document.$id}
@@ -113,9 +118,6 @@ export default function DataFetchingScreen({ navigation }) {
     };
 
     getData();
-  }, []);
-
-  useEffect(() => {
     fetch();
   }, []);
 
@@ -124,7 +126,8 @@ export default function DataFetchingScreen({ navigation }) {
   }
 
   return (
-    <View className="flex-1 p-3">
+    <View className="flex-1 p-3 bg-white">
+      <Text className="text-xs font-bold px-5 py-2 text-red-500">Options:</Text>
       {/* division picker */}
       <View className="flex flex-row items-center justify-evenly m-2">
         <View style={styles.pickerContainer}>
@@ -160,7 +163,6 @@ export default function DataFetchingScreen({ navigation }) {
           </Picker>
         </View>
       </View>
-
       {/* area picker */}
       <View className="flex flex-row items-center justify-evenly m-2">
         <View style={styles.pickerContainer}>
@@ -196,14 +198,28 @@ export default function DataFetchingScreen({ navigation }) {
         </View>
       </View>
 
+      <Text className="text-xs font-bold px-5 py-2 text-red-500">Filters:</Text>
       <View className="flex flex-row items-center justify-around">
         <Checkbox.Item label="All" status="checked" />
         <Checkbox.Item label="Completed" status="unchecked" />
-        <Checkbox.Item label="Pending" status="unchecked" />
+        <Checkbox.Item label="Recall" status="unchecked" />
       </View>
-      {/* <Button icon="book-search-outline" mode="contained" onPress={fetch}>
-        Survey
-      </Button> */}
+      <View className="flex flex-row items-center justify-around">
+        <Checkbox.Item label="Decline" status="unchecked" />
+        <Checkbox.Item label="No Answer" status="unchecked" />
+        <Button
+          icon="clipboard-search-outline"
+          mode="contained"
+          buttonColor="green"
+          onPress={() => console.log("Pressed")}
+        >
+          Search
+        </Button>
+      </View>
+
+      <Text className="text-xs font-bold text-red-500 px-5 pt-2">
+        Documents fetched: {count}
+      </Text>
 
       <View className="h-15">
         <FlatList

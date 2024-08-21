@@ -15,24 +15,28 @@ export function useCaller() {
 
 export function CallerPrvoider(props) {
   const [documents, setDocuments] = useState([]);
-  const division = "Khopoli";
+  const [count, setCount] = useState(0);
+  const division = "Airoli Vidhan Sabha";
 
   async function fetch() {
     const response = await databases.listDocuments(
       DATABASE_ID,
       SURVEY_COLLECTION_ID,
       [
-        //Query.orderDesc("$createdAt"),
-        //Query.limit(10),
+        Query.orderDesc("$createdAt"),
         Query.equal("division", division),
-        Query.equal("ward", "12"),
-        Query.equal("area", "Veena Nagar"),
-        Query.equal("building", "Veena Nagar Left Side Parisar"),
+        Query.equal("ward", "Ghansoli"),
+        Query.equal("area", "Sector 4"),
+        Query.equal("building", "Vigneshwar CHS"),
+        Query.equal("isRoomLocked", false),
+        Query.equal("surveyDenied", false),
       ],
     );
     //toast("documents fetched");
     //console.info(`Documents: ${response.documents}`);
+    const count = response.documents.length;
     setDocuments(response.documents);
+    setCount(count);
   }
 
   async function details(surveyId, navigation) {
@@ -41,13 +45,30 @@ export function CallerPrvoider(props) {
       SURVEY_COLLECTION_ID,
       surveyId,
     );
-    toast("details fetched");
+    //toast("details fetched");
     //console.info(response.documents);
     navigation.navigate("DocumentDetail", { survey: response });
   }
 
+  async function update(DOCUMENT_ID, UPDATED_DOCUMENT) {
+    try {
+      const result = await databases.updateDocument(
+        DATABASE_ID,
+        SURVEY_COLLECTION_ID,
+        DOCUMENT_ID,
+        UPDATED_DOCUMENT,
+      );
+      toast("Updated Successfully");
+      return result;
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   return (
-    <CallerContext.Provider value={{ fetch, documents, details }}>
+    <CallerContext.Provider
+      value={{ fetch, documents, details, update, count }}
+    >
       {props.children}
     </CallerContext.Provider>
   );
