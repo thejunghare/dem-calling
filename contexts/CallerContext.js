@@ -15,15 +15,23 @@ export function useCaller() {
 
 export function CallerPrvoider(props) {
   const [documents, setDocuments] = useState([]);
+  const division = "Khopoli";
 
   async function fetch() {
     const response = await databases.listDocuments(
       DATABASE_ID,
-      CALLING_EMPLOYEE_COLLECTION_ID,
-      [Query.orderDesc("$createdAt"), Query.limit(10)],
+      SURVEY_COLLECTION_ID,
+      [
+        //Query.orderDesc("$createdAt"),
+        //Query.limit(10),
+        Query.equal("division", division),
+        Query.equal("ward", "12"),
+        Query.equal("area", "Veena Nagar"),
+        Query.equal("building", "Veena Nagar Left Side Parisar"),
+      ],
     );
-    toast("documents fetched");
-    //console.info(response.documents);
+    //toast("documents fetched");
+    //console.info(`Documents: ${response.documents}`);
     setDocuments(response.documents);
   }
 

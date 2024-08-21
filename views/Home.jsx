@@ -1,30 +1,35 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { useUser } from "../contexts/UserContext";
-import { Button } from "react-native-paper";
+import { Button, IconButton } from "react-native-paper";
 
 export default function HomeScreen({ navigation }) {
   const user = useUser();
 
   console.log(user.current);
   return (
-    <View>
-      <Text>Welcome, {user.current ? user.current.email : "Please login"}</Text>
-      <Button icon="logout" mode="contained" onPress={() => user.logout()}>
-        Logout
-      </Button>
+    <View className="flex-1 p-3">
+      <View className="full flex flex-row items-center justify-between my-3">
+        <Text className="font-semibold text-base">
+          Welcome, {user.current ? user.current.name : "Please login"}
+        </Text>
 
-      <Button
-        icon="phone"
-        mode="contained"
-        onPress={() => navigation.navigate("Fetch")}
-      >
-        Verification Calling
-      </Button>
+        <IconButton icon="logout" size={20} onPress={() => user.logout()} />
+      </View>
 
-      <Button icon="cake" mode="contained">
-        Birthday message
-      </Button>
+      <View className="my-3 flex items-center justify-evenly h-40">
+        <Button
+          icon="phone"
+          mode="contained"
+          onPress={() => navigation.navigate("Fetch")}
+        >
+          Verification Calling
+        </Button>
+
+        <Button icon="cake" mode="contained">
+          Birthday message
+        </Button>
+      </View>
     </View>
   );
 }
