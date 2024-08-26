@@ -11,10 +11,13 @@ import { IconButton, TextInput, Button } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import { useCaller } from "../contexts/CallerContext";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useUser } from "../contexts/UserContext";
+import * as Clipboard from "expo-clipboard";
 
 export default function DocumentDetailScreen({ route, navigation }) {
-  const { survey, employeeId } = route.params;
+  const { survey } = route.params;
   const { update } = useCaller();
+  const user = useUser();
 
   const [callingStatus, setCallingStatus] = useState();
   const [callingRemark, setCallingRemark] = useState();
@@ -22,6 +25,9 @@ export default function DocumentDetailScreen({ route, navigation }) {
 
   const familyHeadData = JSON.parse(survey.familyhead);
   //console.log(`Caste: ${familyHeadData.caste}`);
+  console.log(`updated : ${survey.$updatedAt}`);
+  //console.log(typeof (survey.$updatedAt))
+
   const [members, setMembers] = useState([]);
 
   const parseMembers = () => {
@@ -112,17 +118,28 @@ export default function DocumentDetailScreen({ route, navigation }) {
     parseMembers();
   }, [survey.members]);
 
-  const handleUpdateDocument = () => {};
+  // copy survey ID
+  const copySurveyIdToClipboard = async () => {
+    await Clipboard.setStringAsync(survey.$id);
+  };
+
+  // copy employee ID
+  const copyEmployeeIdToClipboard = async () => {
+    await Clipboard.setStringAsync(survey.employeeId);
+  };
 
   const handleVerifyDocument = async () => {
     const DOCUMENT_ID = survey.$id;
+    const VERFICATIONEMPLOYEEID = user.current.$id;
     setVerification(true);
     //console.log(DOCUMENT_ID);
+    console.log(VERFICATIONEMPLOYEEID)
 
     const DATA = {
       calling_remark: callingRemark,
       calling_status: callingStatus,
       verification: verification,
+      verification_employee_id: VERFICATIONEMPLOYEEID,
     };
 
     await update(DOCUMENT_ID, DATA);
@@ -160,14 +177,28 @@ export default function DocumentDetailScreen({ route, navigation }) {
 
         <Text className="text-xs font-bold px-3 pt-2">Survey Information</Text>
         <View className="p-4 bg-white rounded-lg mt-2">
-          <View className="flex-row mb-2">
+          <View className="flex-row mb-2 items-center">
             <Text className="text-base font-semibold">Survey ID:</Text>
             <Text className="text-base ml-2"> {survey.$id}</Text>
+            <IconButton
+              icon="content-copy"
+              iconColor={"black"}
+              size={20}
+              onPress={copySurveyIdToClipboard}
+            />
           </View>
 
-          <View className="flex-row">
+          <Text className="text-base ml-2">{survey.$updatedAt}</Text>
+
+          <View className="flex-row items-center">
             <Text className="text-base font-semibold ">Employee ID:</Text>
-            <Text className="text-base ml-2">{employeeId}</Text>
+            <Text className="text-base ml-2">{survey.employeeId}</Text>
+            <IconButton
+              icon="content-copy"
+              iconColor={"black"}
+              size={20}
+              onPress={copyEmployeeIdToClipboard}
+            />
           </View>
         </View>
 

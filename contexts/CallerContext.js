@@ -16,8 +16,16 @@ export function useCaller() {
 export function CallerPrvoider(props) {
   const [documents, setDocuments] = useState([]);
   const [count, setCount] = useState(0);
-  const division = "Airoli Vidhan Sabha";
+  const [totalCallCount, setTotalCallCount] = useState(0);
+  const [todaysCallCount, setTodaysCallCount] = useState(0);
 
+  const [recallscount, setRecallscount] = useState(0);
+  const [noAnswered, setNoAnswered] = useState(0);
+  const [declined, setDeclined] = useState(0);
+  const [completed, setCompleted] = useState(0);
+
+
+  const division = "Airoli Vidhan Sabha";
   async function fetch() {
     const response = await databases.listDocuments(
       DATABASE_ID,
@@ -65,9 +73,93 @@ export function CallerPrvoider(props) {
     }
   }
 
+  // count based on date
+  async function todayscount(userID, date) {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      SURVEY_COLLECTION_ID,
+      [
+        Query.contains('$updatedAt', [date]),
+        Query.equal("verification_employee_id", userID),
+      ],
+    );
+
+    const todaysCallCount = response.documents.length;
+    setTodaysCallCount(todaysCallCount);
+  }
+
+  // total count
+  async function totalcount(userID) {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      SURVEY_COLLECTION_ID,
+      [
+        Query.equal("verification_employee_id", [userID])
+      ],
+    );
+    const totalCallCount = response.documents.length;
+    setTotalCallCount(totalCallCount);
+  }
+
+  const recalls = async (userId) => {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      SURVEY_COLLECTION_ID,
+      [
+        Query.equal("calling_status", ["recall"]),
+        Query.equal("verification_employee_id", [userId]),
+      ],
+    );
+
+    const recallscount = response.documents.length;
+    setRecallscount(recallscount);
+  }
+
+  const noanswer = async (userId) => {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      SURVEY_COLLECTION_ID,
+      [
+        Query.equal("calling_status", ["no_answer"]),
+        Query.equal("verification_employee_id", [userId]),
+      ],
+    );
+
+    const noAnswered = response.documents.length;
+    setNoAnswered(noAnswered);
+  }
+
+  const decline = async (userId) => {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      SURVEY_COLLECTION_ID,
+      [
+        Query.equal("calling_status", ["decline"]),
+        Query.equal("verification_employee_id", [userId]),
+      ],
+    );
+
+    const declined = response.documents.length;
+    setDeclined(declined);
+  }
+
+  const complete = async (userId) => {
+    const response = await databases.listDocuments(
+      DATABASE_ID,
+      SURVEY_COLLECTION_ID,
+      [
+        Query.equal("calling_status", ["complete"]),
+        Query.equal("verification_employee_id", [userId]),
+      ],
+    );
+
+    const completed = response.documents.length;
+    setCompleted(completed);
+  }
+
   return (
     <CallerContext.Provider
-      value={{ fetch, documents, details, update, count }}
+      value={{ fetch, documents, details, update, count, totalcount, totalCallCount, todayscount, todaysCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
     >
       {props.children}
     </CallerContext.Provider>

@@ -8,12 +8,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useCaller } from "../contexts/CallerContext";
+import { useUser } from "../contexts/UserContext";
 import { Button, Checkbox } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 
-export default function DataFetchingScreen({ navigation, route }) {
-  const { employeeId } = route.params;
+export default function DataFetchingScreen({ navigation }) {
+  const user = useUser();
   const { fetch, documents, details, count } = useCaller();
+
   const [division, setDivision] = useState("");
   const [ward, setWard] = useState("");
   const [area, setArea] = useState("");
@@ -72,17 +74,16 @@ export default function DataFetchingScreen({ navigation, route }) {
           documents.map((document) => (
             <TouchableOpacity
               onPress={() =>
-                details(document.$id, navigation, { employeeId: employeeId })
+                details(document.$id, navigation)
               }
             >
               <Text
-                className={`border rounded-md font-semibold text-base p-3 m-3 ${
-                  document.verification === false
-                    ? "bg-red-500 text-white"
-                    : document.verification === true
-                      ? "bg-green-500 text-white"
-                      : "bg-white"
-                }`}
+                className={`border rounded-md font-semibold text-base p-3 m-3 ${document.verification === false
+                  ? "bg-red-500 text-white"
+                  : document.verification === true
+                    ? "bg-green-500 text-white"
+                    : "bg-white"
+                  }`}
                 key={document.$id}
               >
                 Room No: {document.roomNumber}
@@ -128,6 +129,7 @@ export default function DataFetchingScreen({ navigation, route }) {
   return (
     <View className="flex-1 p-3 bg-white">
       <Text className="text-xs font-bold px-5 py-2 text-red-500">Options:</Text>
+      {/* <Text className="text-xs font-bold px-5 py-2 text-red-500">{user.current.$id}</Text> */}
       {/* division picker */}
       <View className="flex flex-row items-center justify-evenly m-2">
         <View style={styles.pickerContainer}>
