@@ -13,22 +13,66 @@ import { useCaller } from "../contexts/CallerContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "../contexts/UserContext";
 import * as Clipboard from "expo-clipboard";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function DocumentDetailScreen({ route, navigation }) {
   const { survey } = route.params;
   const { update } = useCaller();
   const user = useUser();
 
-  const [callingStatus, setCallingStatus] = useState();
-  const [callingRemark, setCallingRemark] = useState();
+  const familyHeadData = JSON.parse(survey.familyhead);
+  // console.info(`family head json: ${familyHeadData}`);
+
+  // calling employee verification 
+  const [callingStatus, setCallingStatus] = useState(survey.calling_status);
+  const [callingRemark, setCallingRemark] = useState(survey.calling_remark);
   const [verification, setVerification] = useState(false);
 
-  const familyHeadData = JSON.parse(survey.familyhead);
-  //console.log(`Caste: ${familyHeadData.caste}`);
-  console.log(`updated : ${survey.$updatedAt}`);
-  //console.log(typeof (survey.$updatedAt))
+  // indivual data
+  const [nativeplace, setNativeplace] = useState(survey.native);
+  const [surveyremark, setSurveyremark] = useState(survey.surveyRemark);
+  const [membercount, setMembercount] = useState(survey.memberCount);
+
+  // family data
+  const [familyheadname, setFamilyheadname] = useState(familyHeadData.familyHeadName);
+  const [familyheadphonenumber, setFamilyheadphonenumber] = useState(familyHeadData.familyHeadMobileNumber);
+  const [familyheadeducation, setFamilyHeadEducation] = useState(familyHeadData.familyHeadEducation);
+  const [caste, setCaste] = useState(familyHeadData.caste);
+  const [birthdate, setBirthdate] = useState(familyHeadData.familyHeadBirthdate);
+  const [age, setAge] = useState(familyHeadData.familyHeadAge);
+  const [familyheadvoterpoll, setFamilyheadvoterpoll] = useState(familyHeadData.voterPoll);
+  const [familyheadvoterpollarea, setFamilyheadvoterpollarea] = useState(familyHeadData.voterPollArea);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const handleBirthdateChange = (event, selectedDate) => {
+    //const currentDate = selectedDate || new Date();
+    setShowDatePicker(false);
+
+    if (selectedDate) {
+      const birthdate = selectedDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+      const age = calculateAge(selectedDate); // Calculate the age
+      setBirthdate(birthdate);
+      setAge(age.toString());
+    }
+  };
+
+  const calculateAge = (birthdate) => {
+    const today = new Date();
+    const birthDate = new Date(birthdate);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDifference = today.getMonth() - birthDate.getMonth();
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
 
   const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    parseMembers();
+  }, [survey.members]);
 
   const parseMembers = () => {
     try {
@@ -36,8 +80,17 @@ export default function DocumentDetailScreen({ route, navigation }) {
       setMembers(parsedMembers);
     } catch (error) {
       console.error("Error parsing members:", error);
+      // TODO add alert
     }
   };
+
+  const handlememberschange = (value, memberId, field) => {
+    setMembers(prevMembers =>
+      prevMembers.map(member =>
+        member.memberId === memberId ? { ...member, [field]: value } : member
+      )
+    );
+  }
 
   // Component to render a single member item
   const renderMemberItem = ({ item }) => {
@@ -61,6 +114,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
           style={styles.input}
           mode="outlined"
           label="Full Name"
+          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberName')}
         />
         <TextInput
           value={item.memberBirthdate}
@@ -73,12 +127,14 @@ export default function DocumentDetailScreen({ route, navigation }) {
           style={styles.input}
           mode="outlined"
           label="Mobile Number"
+          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberMobileNumber')}
         />
         <TextInput
           value={item.memberEducation}
           style={styles.input}
           mode="outlined"
           label="Education"
+          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberEducation')}
         />
         <TextInput
           value={item.voter}
@@ -97,12 +153,14 @@ export default function DocumentDetailScreen({ route, navigation }) {
           style={styles.input}
           mode="outlined"
           label="Voter Poll"
+          onChangeText={(text) => handlememberschange(text, item.memberId, 'voterPoll')}
         />
         <TextInput
           value={item.voterPollArea}
           style={styles.input}
           mode="outlined"
           label="Voter Poll Area"
+          onChangeText={(text) => handlememberschange(text, item.memberId, 'voterPollArea')}
         />
         <TextInput
           value={item.newVoterRegistration}
@@ -114,9 +172,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
     );
   };
 
-  useEffect(() => {
-    parseMembers();
-  }, [survey.members]);
+
 
   // copy survey ID
   const copySurveyIdToClipboard = async () => {
@@ -131,23 +187,52 @@ export default function DocumentDetailScreen({ route, navigation }) {
   const handleVerifyDocument = async () => {
     const DOCUMENT_ID = survey.$id;
     const VERFICATIONEMPLOYEEID = user.current.$id;
+    const updatedfamilydata = {
+      ...familyHeadData,
+      familyHeadName: familyheadname,
+      familyHeadMobileNumber: familyheadphonenumber,
+      familyHeadEducation: familyheadeducation,
+      caste: caste,
+      voterPoll: familyheadvoterpoll,
+      voterPollArea: familyheadvoterpoll
+    }
     setVerification(true);
     //console.log(DOCUMENT_ID);
-    console.log(VERFICATIONEMPLOYEEID)
+    //console.log(VERFICATIONEMPLOYEEID)
+
+    // TODO add client side validation
 
     const DATA = {
+      familyhead: JSON.stringify(updatedfamilydata),
+      members: JSON.stringify(members),
+      native: nativeplace,
+      memberCount: membercount,
+      surveyRemark: surveyremark,
       calling_remark: callingRemark,
       calling_status: callingStatus,
       verification: verification,
       verification_employee_id: VERFICATIONEMPLOYEEID,
     };
 
-    await update(DOCUMENT_ID, DATA);
+    if (await update(DOCUMENT_ID, DATA)) console.log(`updated`);
   };
 
   if (!survey || !survey.familyhead) {
     return <Text>Loading...</Text>;
   }
+
+  function testupdate() {
+    const updatedfamilydata = {
+      ...familyHeadData,
+      familyHeadName: familyheadname,
+    }
+
+    const updatednative = nativeplace;
+    const updatedmembercount = membercount;
+    const updatedsurveyremark = surveyremark;
+    console.info(`updated info ${updatednative}, ${updatedmembercount}, ${updatedsurveyremark}, ${updatedfamilydata.familyHeadName}`);
+  }
+
 
   return (
     <SafeAreaView className="flex-1 px-3">
@@ -188,7 +273,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
             />
           </View>
 
-          <Text className="text-base ml-2">{survey.$updatedAt}</Text>
+          {/* <Text className="text-base ml-2">{survey.$updatedAt}</Text> */}
 
           <View className="flex-row items-center">
             <Text className="text-base font-semibold ">Employee ID:</Text>
@@ -219,7 +304,25 @@ export default function DocumentDetailScreen({ route, navigation }) {
         {/* native place */}
         <TextInput
           label="Native Place"
-          value={survey.native}
+          value={nativeplace}
+          onChangeText={(text) => setNativeplace(text)}
+          style={styles.input}
+          mode="outlined"
+        />
+
+        <TextInput
+          label="Member count"
+          value={membercount}
+          onChangeText={(text) => setMembercount(text)}
+          style={styles.input}
+          mode="outlined"
+        />
+
+        {/* caste */}
+        <TextInput
+          label="Family Caste"
+          value={caste}
+          onChangeText={(text) => setCaste(text)}
           style={styles.input}
           mode="outlined"
         />
@@ -227,7 +330,8 @@ export default function DocumentDetailScreen({ route, navigation }) {
         {/* family head name */}
         <TextInput
           label="Family Head Full Name"
-          value={familyHeadData.familyHeadName}
+          value={familyheadname}
+          onChangeText={(text) => setFamilyheadname(text)}
           style={styles.input}
           mode="outlined"
         />
@@ -235,23 +339,45 @@ export default function DocumentDetailScreen({ route, navigation }) {
         {/* family head phone number */}
         <TextInput
           label="Family Head Phone Number"
-          value={familyHeadData.familyHeadMobileNumber}
+          // value={familyHeadData.familyHeadMobileNumber}
+          value={familyheadphonenumber}
+          onChangeText={(text) => setFamilyheadphonenumber(text)}
           style={styles.input}
           mode="outlined"
         />
 
+        <TextInput
+          label="Family Head Birthdate"
+          value={birthdate}
+          style={styles.input}
+          mode="outlined"
+          onFocus={() => setShowDatePicker(true)}
+          onPressIn={() => setShowDatePicker(true)}
+        />
+        {showDatePicker && (
+          <DateTimePicker
+            value={new Date(familyHeadData.familyHeadBirthdate) || new Date()}
+            mode="date"
+            display="default"
+            onChange={handleBirthdateChange}
+          />
+        )}
+
         {/* family head age */}
         <TextInput
           label="Family Head Age"
-          value={familyHeadData.familyHeadAge}
+          value={age}
           style={styles.input}
           mode="outlined"
+          disabled={true}
         />
 
         {/* family head education */}
         <TextInput
           label="Family Head Education"
-          value={familyHeadData.familyHeadEducation}
+          //value={familyHeadData.familyHeadEducation}
+          value={familyheadeducation}
+          onChangeText={(text) => setFamilyHeadEducation(text)}
           style={styles.input}
           mode="outlined"
         />
@@ -263,6 +389,27 @@ export default function DocumentDetailScreen({ route, navigation }) {
           style={styles.input}
           mode="outlined"
         />
+
+        {/* voter poll */}
+        <TextInput
+          label="Family Head Voter Poll"
+          //value={familyHeadData.familyHeadEducation}
+          value={familyheadvoterpoll}
+          onChangeText={(text) => setFamilyheadvoterpoll(text)}
+          style={styles.input}
+          mode="outlined"
+        />
+
+        {/* voter poll area */}
+        <TextInput
+          label="Family Head Voter Poll Area"
+          //value={familyHeadData.familyHeadEducation}
+          value={familyheadvoterpollarea}
+          onChangeText={(text) => setFamilyheadvoterpollarea(text)}
+          style={styles.input}
+          mode="outlined"
+        />
+
         <Text className="text-xs font-bold px-3 pt-2">Member Information</Text>
         <FlatList
           data={members}
@@ -273,20 +420,19 @@ export default function DocumentDetailScreen({ route, navigation }) {
         {/* survey remark */}
         <TextInput
           label="Remark"
-          value={survey.surveyRemark}
+          value={surveyremark}
+          onChangeText={(text) => setSurveyremark(text)}
           style={styles.input}
           mode="outlined"
         />
 
         <Text className="text-xs font-bold px-3 pt-2">For Caller</Text>
-        {/* calling status picker */}
+        {/* calling status picker*/}
         <View style={styles.pickerContainer}>
           <Picker
             selectedValue={callingStatus}
             mode="dropdown"
-            onValueChange={(itemValue, itemIndex) =>
-              setCallingStatus(itemValue)
-            }
+            onValueChange={(itemValue) => setCallingStatus(itemValue)}
           >
             <Picker.Item label="Calling Status*" value="" />
             <Picker.Item label="Complete" value="complete" />
@@ -302,7 +448,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
           value={callingRemark}
           style={styles.input}
           mode="outlined"
-          onChangeText={(callingRemark) => setCallingRemark(callingRemark)}
+          onChangeText={(text) => setCallingRemark(text)}
         />
 
         {/*buttons */}
@@ -319,24 +465,14 @@ export default function DocumentDetailScreen({ route, navigation }) {
           </Button>
 
           <Button
-            icon="account-plus-outline"
-            buttonColor="orange"
-            mode="contained"
-            onPress={() =>
-              Linking.openURL(`tel:${familyHeadData.familyHeadMobileNumber}`)
-            }
-          >
-            Add
-          </Button>
-
-          <Button
             icon="file-edit-outline"
-            buttonColor="blue"
+            buttonColor="red"
             mode="contained"
             onPress={handleVerifyDocument}
           >
             Update
           </Button>
+
         </View>
       </ScrollView>
     </SafeAreaView>

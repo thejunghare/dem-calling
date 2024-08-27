@@ -14,7 +14,7 @@ export function useCaller() {
 }
 
 export function CallerPrvoider(props) {
-  const [documents, setDocuments] = useState([]);
+  const [fetchedDocuments, setFetchedDocuments] = useState([]);
   const [count, setCount] = useState(0);
   const [totalCallCount, setTotalCallCount] = useState(0);
   const [todaysCallCount, setTodaysCallCount] = useState(0);
@@ -26,11 +26,9 @@ export function CallerPrvoider(props) {
 
 
   const division = "Airoli Vidhan Sabha";
-  async function fetch() {
-    const response = await databases.listDocuments(
-      DATABASE_ID,
-      SURVEY_COLLECTION_ID,
-      [
+  async function fetchlist() {
+    try {
+      const queries = [
         Query.orderDesc("$createdAt"),
         Query.equal("division", division),
         Query.equal("ward", "Ghansoli"),
@@ -38,14 +36,21 @@ export function CallerPrvoider(props) {
         Query.equal("building", "Vigneshwar CHS"),
         Query.equal("isRoomLocked", false),
         Query.equal("surveyDenied", false),
-      ],
-    );
-    //toast("documents fetched");
-    //console.info(`Documents: ${response.documents}`);
-    const count = response.documents.length;
-    setDocuments(response.documents);
-    setCount(count);
+      ];
+
+      const { documents } = await databases.listDocuments(
+        DATABASE_ID,
+        SURVEY_COLLECTION_ID,
+        queries,
+      );
+
+      setFetchedDocuments(documents);
+      setCount(documents.length);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    }
   }
+
 
   async function details(surveyId, navigation) {
     const response = await databases.getDocument(
@@ -159,7 +164,7 @@ export function CallerPrvoider(props) {
 
   return (
     <CallerContext.Provider
-      value={{ fetch, documents, details, update, count, totalcount, totalCallCount, todayscount, todaysCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
+      value={{ fetchlist, fetchedDocuments, details, update, count, totalcount, totalCallCount, todayscount, todaysCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
     >
       {props.children}
     </CallerContext.Provider>
