@@ -7,12 +7,14 @@ import {
   StyleSheet,
   ActivityIndicator,
   SafeAreaView,
-  ScrollView
+  ScrollView,
+  Alert
 } from "react-native";
 import { useCaller } from "../contexts/CallerContext";
 // import { useUser } from "../contexts/UserContext";
-import { Button, Checkbox } from "react-native-paper";
+import { Button, Checkbox, Badge, Chip } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
+import Toast from 'react-native-toast-message';
 
 export default function DataFetchingScreen({ navigation }) {
   // const user = useUser();
@@ -27,10 +29,14 @@ export default function DataFetchingScreen({ navigation }) {
   const [areas, setAreas] = useState([]);
   const [buildings, setBuildings] = useState([]);
   const [loading, setLoading] = useState(true);
-  // const [checked, setChecked] = React.useState(false);
+  const [buttondisable, setButtondisable] = useState(false);
+  //const [filterAll, setFilterAll] = useState(true);
+  //const [filterNoAnswer, setFilterNoAnswer] = useState(false);
 
   const handleDivisionChange = (itemValue) => {
     setDivision(itemValue);
+    // console.log(`selected division: ${division}`)
+
     const selectedDivision = divisions.find((div) => div.name === itemValue);
     if (selectedDivision) {
       setWards(selectedDivision.wards);
@@ -70,20 +76,47 @@ export default function DataFetchingScreen({ navigation }) {
   };
 
   const renderItem = ({ item }) => {
+    let backgroundColor, color;
+
+    switch (item.calling_status) {
+      case 'no_answer':
+        backgroundColor = '#FF4F00'; //orange
+        color = '#FFFFFF';
+        break;
+      case 'recall':
+        backgroundColor = '#FFBF00'; //yellow
+        color = '#000000';
+        break;
+      case 'complete':
+        backgroundColor = '#6CB4EE'; //blue
+        color = '#FFFFFF';
+        break;
+      case 'decline':
+        backgroundColor = '#ED2939'; //red
+        color = '#FFFFFF';
+        break;
+      default:
+        backgroundColor = '#F4F0EC'; // white smoke
+        color = '#000000';
+    }
+
     return (
       <TouchableOpacity
         onPress={() => details(item.$id, navigation)}
       >
-        <Text
-          className={`border rounded-md font-semibold text-base p-3 m-3 ${item.verification === false
-            ? "bg-red-500 text-white"
-            : item.verification === true
-              ? "bg-green-500 text-white"
-              : "bg-white"
-            }`}
-        >
-          Room No: {item.roomNumber}
-        </Text>
+        <View className='flex flex-row items-center justify-evenly'>
+          <Text
+            className={`rounded-lg shadow-md font-medium text-base p-3 m-3 w-3/5`}
+            style={{ backgroundColor, color }}
+          >
+            {item.roomNumber}
+          </Text>
+          {item.verification ? (
+            <Chip icon="information" mode="outlined">Verified</Chip>
+          ) : (
+            <Chip icon="information" mode="outlined">Pending</Chip>
+          )}
+        </View>
       </TouchableOpacity>
     );
   };
@@ -106,8 +139,25 @@ export default function DataFetchingScreen({ navigation }) {
     };
 
     getjsondata();
-    fetchlist();
   }, []);
+
+  const showToast = () => {
+    Toast.show({
+      type: 'info',
+      text1: 'Options not selected!',
+      position: 'bottom'
+    });
+  }
+
+  function getlist() {
+    setButtondisable(true);
+    if (division == '' || ward == '' || area == '' || building == '') {
+      showToast()
+    } else {
+      fetchlist(division, ward, area, building);
+    }
+    setButtondisable(false);
+  }
 
 
   if (loading) {
@@ -154,7 +204,7 @@ export default function DataFetchingScreen({ navigation }) {
           </View>
         </View>
 
-        <View className="flex flex-row items-center justify-evenly m-2">
+        <View className="flex flex-row items-center justify-evenly my-5">
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={area}
@@ -188,29 +238,48 @@ export default function DataFetchingScreen({ navigation }) {
           </View>
         </View>
 
-        <Text className="text-xs font-bold px-5 py-2 text-red-500">Filters:</Text>
+        {/* <Text className="text-xs font-bold px-5 py-2 text-red-500">Filters:</Text> */}
 
-        <View className="flex flex-row items-center justify-around">
-          <Checkbox.Item label="All" status="checked" />
+        {/* <View className="flex flex-row items-center justify-around">
+          <Checkbox.Item
+            label="All"
+            status={filterAll ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setFilterAll(true);
+              fetchlist();
+            }}
+          />
           <Checkbox.Item label="Completed" status="unchecked" />
           <Checkbox.Item label="Recall" status="unchecked" />
         </View>
         <View className="flex flex-row items-center justify-around">
           <Checkbox.Item label="Decline" status="unchecked" />
-          <Checkbox.Item label="No Answer" status="unchecked" />
-          <Button
-            icon="clipboard-search-outline"
-            mode="contained"
-            buttonColor="green"
-            onPress={() => console.log("Pressed")}
-          >
-            Search
-          </Button>
-        </View>
+          <Checkbox.Item
+            label="No answer"
+            status={filterNoAnswer ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setFilterNoAnswer(true);
+              fetchlist();
+            }}
+          />
+        </View> */}
 
-        <Text className="text-xs font-bold text-red-500 px-5 pt-2">
+        <Button
+          icon="database-search-outline"
+          mode="contained"
+          buttonColor="#ED2939"
+          onPress={getlist}
+          className='my-2 w-2/4 m-auto'
+          loading={buttondisable}
+        >
+          Search
+        </Button>
+
+        {/*  <Text className="text-xs font-bold text-red-500 px-5 pt-2">
           Documents fetched: {count}
-        </Text>
+        </Text> */}
+
+        <Text className="text-xs font-bold px-5 py-2 text-red-500">Surveys: {count}</Text>
 
         <View className="h-15">
           <FlatList
@@ -218,7 +287,7 @@ export default function DataFetchingScreen({ navigation }) {
             keyExtractor={(item) => item.$id}
             renderItem={renderItem}
             ListEmptyComponent={
-              <Text className="bg-white font-semibold text-base p-3 my-3 rounded">
+              <Text className="border w-2/4 m-auto font-semibold text-sm p-3 my-3 rounded text-center">
                 No documents found
               </Text>
             }

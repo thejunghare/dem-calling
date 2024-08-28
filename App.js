@@ -18,6 +18,7 @@ import { UserProvider } from "./contexts/UserContext";
 import { IdeasProvider } from "./contexts/SurveyContext"; // Add import
 import { CallerPrvoider } from "./contexts/CallerContext";
 import { Router } from "./lib/Router";
+import Toast from 'react-native-toast-message';
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
       <IdeasProvider>
         <CallerPrvoider>
           <Router />
+          <Toast />
         </CallerPrvoider>
       </IdeasProvider>
     </UserProvider>

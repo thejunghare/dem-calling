@@ -22,7 +22,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
 
   const familyHeadData = JSON.parse(survey.familyhead);
   // console.info(`family head json: ${familyHeadData}`);
-
+  const [buttondisable, setButtondisable] = useState(false);
   // calling employee verification 
   const [callingStatus, setCallingStatus] = useState(survey.calling_status);
   const [callingRemark, setCallingRemark] = useState(survey.calling_remark);
@@ -185,6 +185,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
   };
 
   const handleVerifyDocument = async () => {
+    setButtondisable(true);
     const DOCUMENT_ID = survey.$id;
     const VERFICATIONEMPLOYEEID = user.current.$id;
     const updatedfamilydata = {
@@ -214,7 +215,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
       verification_employee_id: VERFICATIONEMPLOYEEID,
     };
 
-    if (await update(DOCUMENT_ID, DATA)) console.log(`updated`);
+    if (await update(DOCUMENT_ID, DATA)) setButtondisable(false);
   };
 
   if (!survey || !survey.familyhead) {
@@ -455,7 +456,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
         <View className="flex flex-row items-center justify-around m-3">
           <Button
             icon="call-made"
-            buttonColor="green"
+            buttonColor="#03C03C"
             mode="contained"
             onPress={() =>
               Linking.openURL(`tel:${familyHeadData.familyHeadMobileNumber}`)
@@ -466,9 +467,10 @@ export default function DocumentDetailScreen({ route, navigation }) {
 
           <Button
             icon="file-edit-outline"
-            buttonColor="red"
+            buttonColor="#6CB4EE"
             mode="contained"
             onPress={handleVerifyDocument}
+            loading={buttondisable}
           >
             Update
           </Button>
