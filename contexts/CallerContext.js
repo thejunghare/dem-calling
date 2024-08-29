@@ -18,12 +18,17 @@ export function CallerPrvoider(props) {
   const [fetchedDocuments, setFetchedDocuments] = useState([]);
   const [count, setCount] = useState(0);
   const [totalCallCount, setTotalCallCount] = useState(0);
-  const [todaysCallCount, setTodaysCallCount] = useState(0);
-
   const [recallscount, setRecallscount] = useState(0);
   const [noAnswered, setNoAnswered] = useState(0);
   const [declined, setDeclined] = useState(0);
   const [completed, setCompleted] = useState(0);
+  const [date, setDate] = useState('');
+
+  const currentdate = function () {
+    const date = new Date();
+    const options = { year: 'numeric', month: 'short', day: 'numeric' }; // Remove 'hour' and 'minute'
+    return date.toLocaleString('en-US', options);
+  }
 
 
   // const division = "Airoli Vidhan Sabha";
@@ -81,22 +86,12 @@ export function CallerPrvoider(props) {
       return result;
     } catch (error) {
       console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'try again!',
+        position: 'bottom'
+      });
     }
-  }
-
-  // count based on date
-  async function todayscount(userID, date) {
-    const response = await databases.listDocuments(
-      DATABASE_ID,
-      SURVEY_COLLECTION_ID,
-      [
-        Query.contains('$updatedAt', [date]),
-        Query.equal("verification_employee_id", userID),
-      ],
-    );
-
-    const todaysCallCount = response.documents.length;
-    setTodaysCallCount(todaysCallCount);
   }
 
   // total count
@@ -105,7 +100,8 @@ export function CallerPrvoider(props) {
       DATABASE_ID,
       SURVEY_COLLECTION_ID,
       [
-        Query.equal("verification_employee_id", [userID])
+        Query.equal("verification_employee_id", [userID]),
+        Query.contains("last_updated_date", [date]),
       ],
     );
     const totalCallCount = response.documents.length;
@@ -119,6 +115,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("calling_status", ["recall"]),
         Query.equal("verification_employee_id", [userId]),
+        Query.contains("last_updated_date", [date]),
       ],
     );
 
@@ -133,6 +130,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("calling_status", ["no_answer"]),
         Query.equal("verification_employee_id", [userId]),
+        Query.contains("last_updated_date", [date]),
       ],
     );
 
@@ -147,6 +145,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("calling_status", ["decline"]),
         Query.equal("verification_employee_id", [userId]),
+        Query.contains("last_updated_date", [date]),
       ],
     );
 
@@ -161,6 +160,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("calling_status", ["complete"]),
         Query.equal("verification_employee_id", [userId]),
+        Query.contains("last_updated_date", [date]),
       ],
     );
 
@@ -170,7 +170,7 @@ export function CallerPrvoider(props) {
 
   return (
     <CallerContext.Provider
-      value={{ fetchlist, fetchedDocuments, details, update, count, totalcount, totalCallCount, todayscount, todaysCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
+      value={{ fetchlist, fetchedDocuments, details, update, count, totalcount, totalCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
     >
       {props.children}
     </CallerContext.Provider>

@@ -2,6 +2,7 @@ import { ID } from "react-native-appwrite";
 import { createContext, useContext, useEffect, useState } from "react";
 import { account } from "../lib/appwrite";
 import { toast } from "../lib/toast";
+import Toast from 'react-native-toast-message';
 
 const UserContext = createContext();
 
@@ -13,15 +14,35 @@ export function UserProvider(props) {
   const [user, setUser] = useState(null);
 
   async function login(email, password) {
-    const loggedIn = await account.createEmailPasswordSession(email, password);
-    setUser(loggedIn);
-    toast("Welcome back. You are logged in");
+    try {
+      const loggedIn = await account.createEmailPasswordSession(email, password);
+      setUser(loggedIn);
+      Toast.show({
+        type: 'success',
+        text1: 'Login Success!',
+        text2: 'Welcome back',
+        position: 'bottom'
+      });
+    } catch (error) {
+      //console.error(error);
+      Toast.show({
+        type: 'error',
+        text1: 'Invalid login details!',
+        position: 'bottom'
+      });
+    }
   }
 
   async function logout() {
     await account.deleteSession("current");
     setUser(null);
-    toast("Logged out");
+    //toast("Logged out");
+    Toast.show({
+      type: 'success',
+      text1: 'Logged out',
+      text2: 'See you soon!',
+      position: 'bottom'
+    });
   }
 
   async function register(email, password) {

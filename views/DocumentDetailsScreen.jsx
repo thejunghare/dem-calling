@@ -6,6 +6,7 @@ import {
   StyleSheet,
   Linking,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { IconButton, TextInput, Button } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
@@ -14,6 +15,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "../contexts/UserContext";
 import * as Clipboard from "expo-clipboard";
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Toast from 'react-native-toast-message';
 
 export default function DocumentDetailScreen({ route, navigation }) {
   const { survey } = route.params;
@@ -44,6 +46,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
   const [familyheadvoterpollarea, setFamilyheadvoterpollarea] = useState(familyHeadData.voterPollArea);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [updatedate, setUpdatedate] = useState();
 
   const handleBirthdateChange = (event, selectedDate) => {
     //const currentDate = selectedDate || new Date();
@@ -172,8 +175,6 @@ export default function DocumentDetailScreen({ route, navigation }) {
     );
   };
 
-
-
   // copy survey ID
   const copySurveyIdToClipboard = async () => {
     await Clipboard.setStringAsync(survey.$id);
@@ -201,7 +202,13 @@ export default function DocumentDetailScreen({ route, navigation }) {
     //console.log(DOCUMENT_ID);
     //console.log(VERFICATIONEMPLOYEEID)
 
-    // TODO add client side validation
+    const currentdate = function () {
+      const date = new Date();
+      const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
+      return date.toLocaleString('en-US', options);
+    }
+
+    setUpdatedate(currentdate());
 
     const DATA = {
       familyhead: JSON.stringify(updatedfamilydata),
@@ -213,27 +220,34 @@ export default function DocumentDetailScreen({ route, navigation }) {
       calling_status: callingStatus,
       verification: verification,
       verification_employee_id: VERFICATIONEMPLOYEEID,
+      last_updated_date: updatedate,
     };
 
-    if (await update(DOCUMENT_ID, DATA)) setButtondisable(false);
+    if (callingRemark == '' || !callingStatus) {
+      const showErrorToast = () => {
+        Toast.show({
+          type: 'info',
+          text1: 'Options not selected!',
+          position: 'bottom'
+        });
+      }
+      showErrorToast();
+      setButtondisable(false);
+    } else {
+      if (await update(DOCUMENT_ID, DATA))
+        setButtondisable(false);
+    }
+
+    setButtondisable(false);
   };
 
   if (!survey || !survey.familyhead) {
-    return <Text>Loading...</Text>;
+    return (
+      <View className='w-screen h-screen  flex items-center justify-center'>
+        <ActivityIndicator size="large" animating={true} color="#0000ff" />
+      </View>
+    );
   }
-
-  function testupdate() {
-    const updatedfamilydata = {
-      ...familyHeadData,
-      familyHeadName: familyheadname,
-    }
-
-    const updatednative = nativeplace;
-    const updatedmembercount = membercount;
-    const updatedsurveyremark = surveyremark;
-    console.info(`updated info ${updatednative}, ${updatedmembercount}, ${updatedsurveyremark}, ${updatedfamilydata.familyHeadName}`);
-  }
-
 
   return (
     <SafeAreaView className="flex-1 px-3">

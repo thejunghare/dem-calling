@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { View, Text, RefreshControl, SafeAreaView, ScrollView } from "react-native";
+import { View, Text, RefreshControl, SafeAreaView, ScrollView, Image } from "react-native";
 import { useUser } from "../contexts/UserContext";
 import { Button, IconButton, MD3Colors } from "react-native-paper";
 import * as Clipboard from "expo-clipboard";
@@ -7,7 +7,7 @@ import { useCaller } from "../contexts/CallerContext";
 
 export default function HomeScreen({ navigation }) {
   const user = useUser();
-  const { totalcount, totalCallCount, todayscount, todaysCallCount, recalls, recallscount, complete, completed, decline, declined, noanswer, noAnswered } = useCaller();
+  const { totalcount, totalCallCount, recalls, recallscount, complete, completed, decline, declined, noanswer, noAnswered } = useCaller();
 
   const [refreshing, setRefreshing] = React.useState(false);
   let todaysdate;
@@ -68,48 +68,26 @@ export default function HomeScreen({ navigation }) {
           />
         </View>
 
-        <Text className="text-xs font-bold px-3 pt-2">Total count</Text>
-        <View className="bg-white rounded-lg m-3 p-3 full flex items-start justify-center my-3">
-          <Text className="font-semibold text-base">
-            Completed: {completed}
-          </Text>
-          <Text className="font-semibold text-base">
-            No answer: {noAnswered}
-          </Text>
-          <Text className="font-semibold text-base">
-            Recall: {recallscount}
-          </Text>
-          <Text className="font-semibold text-base">
-            Declined: {declined}
-          </Text>
-          <Text className="font-semibold text-base">
-            Total: {totalCallCount}
-          </Text>
-        </View>
-
         <Text className="text-xs font-bold px-3 pt-2">Today's count</Text>
-        <View className="bg-white rounded-lg m-3 p-3 full flex items-start justify-center my-3">
-          <Text className="font-semibold text-base">
-            Completed: {completed}
+        <View className=" bg-white rounded-lg m-3 p-3 full flex flex-row items-start justify-around my-3">
+          <Text className="font-bold text-base p-3 w-11 h-11 text-center text-white rounded-full" style={{ backgroundColor: '#6CB4EE' }}>
+            {completed}
           </Text>
-          <Text className="font-semibold text-base">
-            No answer: {noAnswered}
+          <Text className="font-bold text-base p-3 w-11 h-11 text-center text-white rounded-full" style={{ backgroundColor: '#FF4F00' }}>
+            {noAnswered}
           </Text>
-          <Text className="font-semibold text-base">
-            Recall: {recallscount}
+          <Text className="font-bold text-base p-3 w-11 h-11 text-center text-white rounded-full" style={{ backgroundColor: '#FFBF00' }}>
+            {recallscount}
           </Text>
-          <Text className="font-semibold text-base">
-            Declined: {declined}
-          </Text>
-          <Text className="font-semibold text-base">
-            Total: {totalCallCount}
+          <Text className="font-bold text-base p-3 w-11 h-11 text-center text-white rounded-full" style={{ backgroundColor: '#ED2939' }}>
+            {declined}
           </Text>
         </View>
 
-        <View className="my-3 flex items-center justify-evenly h-40">
+        <View className="my-3 flex items-center justify-evenly h-60">
           <Button
             icon="phone"
-            mode="contained"
+            mode="outlined"
             onPress={() =>
               navigation.navigate("Fetch")
             }
@@ -117,13 +95,29 @@ export default function HomeScreen({ navigation }) {
             Verification Calling
           </Button>
 
-          <Button icon="cake" mode="contained">
+          <Button icon="cake" mode="outlined">
             Birthday message
           </Button>
 
-          <Button icon="logout" onPress={() => user.logout()} mode="contained">
+          <Button icon="logout" onPress={() => user.logout()} mode="outlined" >
             Logout
           </Button>
+
+          <Button icon="help-circle-outline" onPress={() => navigation.navigate("Help")} mode="outlined">
+            Help
+          </Button>
+        </View>
+
+        <View className="">
+          <Image
+            source={require('../assets/dem-logo-new.png')}
+            style={{
+              width: 200,
+              height: 150,
+              marginRight: "auto",
+              marginLeft: "auto",
+            }}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>

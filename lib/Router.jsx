@@ -3,6 +3,7 @@ import LoginScreen from "../views/Login";
 import HomeScreen from "../views/Home";
 import DataFetchingScreen from "../views/FetchDataForCalling";
 import DocumentDetailScreen from "../views/DocumentDetailsScreen";
+import Help from "../views/Help";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useUser } from "../contexts/UserContext";
 
@@ -17,7 +18,7 @@ export function Router() {
           <Stack.Screen
             name="Login"
             component={LoginScreen}
-            options={{ title: "Login" }}
+            options={{ title: "Login", headerBackTitleVisible: false }}
           />
         ) : (
           <>
@@ -35,6 +36,11 @@ export function Router() {
               name="DocumentDetail"
               component={DocumentDetailScreen}
               options={{ title: "Details" }}
+            />
+            <Stack.Screen
+              name="Help"
+              component={Help}
+              options={{ title: "Help" }}
             />
           </>
         )}
