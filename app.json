@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "dem-calling",
+    "name": "Dem Calling",
     "slug": "dem-calling",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -17,11 +17,18 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      }
+        "backgroundColor": "#ffffff",
+        "versionCode": 2
+      },
+      "package": "com.thejunghare.demcalling"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "2ec08e22-2663-4ae9-8248-ae775f086bf2"
+      }
     }
   }
 }

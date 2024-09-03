@@ -45,11 +45,11 @@ export function UserProvider(props) {
     });
   }
 
-  async function register(email, password) {
+  /* async function register(email, password) {
     await account.create(ID.unique(), email, password);
     await login(email, password);
     toast("Account created");
-  }
+  } */
 
   async function init() {
     try {
@@ -67,7 +67,7 @@ export function UserProvider(props) {
 
   return (
     <UserContext.Provider
-      value={{ current: user, login, logout, register, toast }}
+      value={{ current: user, login, logout, toast }}
     >
       {props.children}
     </UserContext.Provider>

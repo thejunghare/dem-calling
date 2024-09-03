@@ -6,7 +6,7 @@ import Toast from 'react-native-toast-message';
 
 const DATABASE_ID = "66502c6e0015d7be8526";
 const CALLING_EMPLOYEE_COLLECTION_ID = "6";
-const SURVEY_COLLECTION_ID = "6650391e00030acc335b";
+const SURVEY_COLLECTION_ID = "8";
 
 const CallerContext = createContext();
 
@@ -22,41 +22,64 @@ export function CallerPrvoider(props) {
   const [noAnswered, setNoAnswered] = useState(0);
   const [declined, setDeclined] = useState(0);
   const [completed, setCompleted] = useState(0);
-  const [date, setDate] = useState('');
+  const [updatedDate, setUpdatedDate] = useState('');
 
-  const currentdate = function () {
-    const date = new Date();
-    const options = { year: 'numeric', month: 'short', day: 'numeric' }; // Remove 'hour' and 'minute'
-    return date.toLocaleString('en-US', options);
-  }
+  useEffect(() => {
+    const currentdate = function () {
+      const date = new Date();
+      const options = { year: 'numeric', month: 'short', day: 'numeric' };
+      setUpdatedDate(date.toLocaleString('en-US', options))
+    }
+
+    //console.log(updatedDate)
+    currentdate()
+  })
 
 
   // const division = "Airoli Vidhan Sabha";
   async function fetchlist(division, ward, area, building) {
     try {
+      let allDocuments = [];
+      let lastDocumentId = null;
+
       const queries = [
         Query.orderDesc("$createdAt"),
         Query.equal("division", division),
-        Query.equal("ward", ward), //"Ghansoli"
-        Query.equal("area", area), //"Sector 4"
-        Query.equal("building", building), //"Vigneshwar CHS"
+        Query.equal("ward", ward),
+        Query.equal("area", area),
+        Query.equal("building", building),
         Query.equal("isRoomLocked", false),
         Query.equal("surveyDenied", false),
       ];
 
-      const { documents } = await databases.listDocuments(
-        DATABASE_ID,
-        SURVEY_COLLECTION_ID,
-        queries,
-      );
+      while (true) {
+        const additionalQueries = lastDocumentId
+          ? [...queries, Query.cursorAfter(lastDocumentId)]
+          : queries;
 
-      setFetchedDocuments(documents);
-      setCount(documents.length);
+        const { documents } = await databases.listDocuments(
+          DATABASE_ID,
+          SURVEY_COLLECTION_ID,
+          additionalQueries
+        );
+
+        allDocuments = [...allDocuments, ...documents];
+
+        if (documents.length < 25) {
+          // If less than 25 documents were returned, we've fetched all available documents
+          break;
+        }
+
+        // Update lastDocumentId for pagination
+        lastDocumentId = documents[documents.length - 1].$id;
+      }
+
+      setFetchedDocuments(allDocuments);
+      setCount(allDocuments.length);
     } catch (error) {
       console.error('Error fetching documents:', error);
     }
   }
-
 
   async function details(surveyId, navigation) {
     const response = await databases.getDocument(
@@ -101,7 +124,7 @@ export function CallerPrvoider(props) {
       SURVEY_COLLECTION_ID,
       [
         Query.equal("verification_employee_id", [userID]),
-        Query.contains("last_updated_date", [date]),
+        Query.contains("verified_at", [updatedDate]),
       ],
     );
     const totalCallCount = response.documents.length;
@@ -115,7 +138,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("calling_status", ["recall"]),
         Query.equal("verification_employee_id", [userId]),
-        Query.contains("last_updated_date", [date]),
+        Query.contains("verified_at", [updatedDate]),
       ],
     );
 
@@ -130,7 +153,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("calling_status", ["no_answer"]),
         Query.equal("verification_employee_id", [userId]),
-        Query.contains("last_updated_date", [date]),
+        Query.contains("verified_at", [updatedDate]),
       ],
     );
 
@@ -143,9 +166,9 @@ export function CallerPrvoider(props) {
       DATABASE_ID,
       SURVEY_COLLECTION_ID,
       [
-        Query.equal("calling_status", ["decline"]),
-        Query.equal("verification_employee_id", [userId]),
-        Query.contains("last_updated_date", [date]),
+        Query.contains("calling_status", "decline"),
+        Query.equal("verification_employee_id", userId),
+        Query.contains("verified_at", updatedDate),
       ],
     );
 
@@ -160,7 +183,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("calling_status", ["complete"]),
         Query.equal("verification_employee_id", [userId]),
-        Query.contains("last_updated_date", [date]),
+        Query.contains("verified_at", [updatedDate]),
       ],
     );
 

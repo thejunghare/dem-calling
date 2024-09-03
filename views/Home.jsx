@@ -36,7 +36,7 @@ export default function HomeScreen({ navigation }) {
   useEffect(() => {
     if (refreshing) {
       // based on current date
-      todayscount(user.current.$id, date);
+      // todayscount(user.current.$id, date);
 
       // total count
       totalcount(user.current.$id);
@@ -99,13 +99,15 @@ export default function HomeScreen({ navigation }) {
             Birthday message
           </Button>
 
+          <Button icon="help-circle-outline" onPress={() => navigation.navigate("Help")} mode="outlined">
+            Help
+          </Button>
+
           <Button icon="logout" onPress={() => user.logout()} mode="outlined" >
             Logout
           </Button>
 
-          <Button icon="help-circle-outline" onPress={() => navigation.navigate("Help")} mode="outlined">
-            Help
-          </Button>
+
         </View>
 
         <View className="">

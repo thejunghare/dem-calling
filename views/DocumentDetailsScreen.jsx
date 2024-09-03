@@ -46,7 +46,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
   const [familyheadvoterpollarea, setFamilyheadvoterpollarea] = useState(familyHeadData.voterPollArea);
 
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [updatedate, setUpdatedate] = useState();
+  const [updatedDate, setUpdatedate] = useState();
 
   const handleBirthdateChange = (event, selectedDate) => {
     //const currentDate = selectedDate || new Date();
@@ -124,6 +124,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
           style={styles.input}
           mode="outlined"
           label="Birthdate"
+          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberBirthdate')}
         />
         <TextInput
           value={item.memberMobileNumber}
@@ -150,6 +151,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
           style={styles.input}
           mode="outlined"
           label="Age"
+          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberAge')}
         />
         <TextInput
           value={item.voterPoll}
@@ -189,11 +191,15 @@ export default function DocumentDetailScreen({ route, navigation }) {
     setButtondisable(true);
     const DOCUMENT_ID = survey.$id;
     const VERFICATIONEMPLOYEEID = user.current.$id;
+    console.log(VERFICATIONEMPLOYEEID);
+
     const updatedfamilydata = {
       ...familyHeadData,
       familyHeadName: familyheadname,
       familyHeadMobileNumber: familyheadphonenumber,
       familyHeadEducation: familyheadeducation,
+      familyHeadBirthdate: birthdate,
+      familyHeadAge: age,
       caste: caste,
       voterPoll: familyheadvoterpoll,
       voterPollArea: familyheadvoterpoll
@@ -202,13 +208,15 @@ export default function DocumentDetailScreen({ route, navigation }) {
     //console.log(DOCUMENT_ID);
     //console.log(VERFICATIONEMPLOYEEID)
 
-    const currentdate = function () {
+    function currentdate() {
       const date = new Date();
       const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
       return date.toLocaleString('en-US', options);
     }
 
-    setUpdatedate(currentdate());
+    const updatedDate = currentdate()
+    setUpdatedate(updatedDate)
+    console.log(updatedDate);
 
     const DATA = {
       familyhead: JSON.stringify(updatedfamilydata),
@@ -220,14 +228,16 @@ export default function DocumentDetailScreen({ route, navigation }) {
       calling_status: callingStatus,
       verification: verification,
       verification_employee_id: VERFICATIONEMPLOYEEID,
-      last_updated_date: updatedate,
+      verified_at: updatedDate,
     };
 
-    if (callingRemark == '' || !callingStatus) {
+
+    if (!VERFICATIONEMPLOYEEID || !updatedDate || callingRemark == '' || !callingStatus) {
       const showErrorToast = () => {
         Toast.show({
-          type: 'info',
-          text1: 'Options not selected!',
+          type: 'error',
+          text1: 'Field required',
+          text2: 'fields are required unless marked optional!',
           position: 'bottom'
         });
       }
@@ -366,17 +376,9 @@ export default function DocumentDetailScreen({ route, navigation }) {
           value={birthdate}
           style={styles.input}
           mode="outlined"
-          onFocus={() => setShowDatePicker(true)}
-          onPressIn={() => setShowDatePicker(true)}
+          onChangeText={(text) => setBirthdate(text)}
         />
-        {showDatePicker && (
-          <DateTimePicker
-            value={new Date(familyHeadData.familyHeadBirthdate) || new Date()}
-            mode="date"
-            display="default"
-            onChange={handleBirthdateChange}
-          />
-        )}
+
 
         {/* family head age */}
         <TextInput
@@ -384,7 +386,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
           value={age}
           style={styles.input}
           mode="outlined"
-          disabled={true}
+          onChangeText={(text) => setAge(text)}
         />
 
         {/* family head education */}
