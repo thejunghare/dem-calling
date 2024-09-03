@@ -173,9 +173,45 @@ export default function DocumentDetailScreen({ route, navigation }) {
           mode="outlined"
           label="New Registration"
         />
+        {item.isNew && (
+          <Button
+            icon="account-remove-outline"
+            buttonColor="#C51E3A"
+            mode="contained"
+            onPress={() => removeMember(item.memberId)}
+            className='w-2/4 m-auto'
+          >
+            Remove
+          </Button>
+        )}
       </View>
     );
   };
+
+  const addMember = () => {
+    const newMemberId = members.length + 1;
+    const newMember = {
+      memberId: newMemberId.toString(),
+      memberName: '',
+      memberBirthdate: '',
+      memberMobileNumber: '',
+      memberEducation: '',
+      voter: '',
+      memberAge: '',
+      voterPoll: '',
+      voterPollArea: '',
+      newVoterRegistration: '',
+      isNew: true
+    };
+
+    setMembers([...members, newMember]);
+  };
+
+  const removeMember = (memberId) => {
+    setMembers(prevMembers => prevMembers.filter(member => member.memberId !== memberId));
+  };
+
+
 
   // copy survey ID
   const copySurveyIdToClipboard = async () => {
@@ -427,6 +463,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
           mode="outlined"
         />
 
+        {/* member */}
         <Text className="text-xs font-bold px-3 pt-2">Member Information</Text>
         <FlatList
           data={members}
@@ -469,7 +506,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
         />
 
         {/*buttons */}
-        <View className="flex flex-row items-center justify-around m-3">
+        <View className="flex flex-row items-center justify-evenly m-3">
           <Button
             icon="call-made"
             buttonColor="#03C03C"
@@ -478,20 +515,32 @@ export default function DocumentDetailScreen({ route, navigation }) {
               Linking.openURL(`tel:${familyHeadData.familyHeadMobileNumber}`)
             }
           >
-            Call
+            Make Call
           </Button>
 
           <Button
-            icon="file-edit-outline"
+            icon="plus"
+            buttonColor="#C51E3A"
+            mode="contained"
+            onPress={() => addMember()}
+          >
+            Add Member
+          </Button>
+        </View>
+
+        <View className='my-3'>
+          <Button
+            icon="square-edit-outline"
             buttonColor="#6CB4EE"
             mode="contained"
             onPress={handleVerifyDocument}
             loading={buttondisable}
+            className='m-auto w-2/4'
           >
-            Update
+            Update Form
           </Button>
-
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );

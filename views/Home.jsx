@@ -95,19 +95,13 @@ export default function HomeScreen({ navigation }) {
             Verification Calling
           </Button>
 
-          <Button icon="cake" mode="outlined">
-            Birthday message
-          </Button>
-
-          <Button icon="help-circle-outline" onPress={() => navigation.navigate("Help")} mode="outlined">
-            Help
+          <Button icon="information-outline" onPress={() => navigation.navigate("Help")} mode="outlined">
+            About App & Help
           </Button>
 
           <Button icon="logout" onPress={() => user.logout()} mode="outlined" >
-            Logout
+            End Session / Logout
           </Button>
-
-
         </View>
 
         <View className="">

@@ -1,17 +1,19 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, Image } from "react-native";
 import { useUser } from "../contexts/UserContext";
-import { Button, TextInput, Icon } from 'react-native-paper';
+import { Button, TextInput } from 'react-native-paper';
 
 export default function LoginScreen() {
-  const [buttondisable, setButtondisable] = useState(false);
   const [secureText, setSecureText] = useState(true);
-  const toggleSecureText = () => {
-    setSecureText(!secureText);
-  };
   const user = useUser();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [buttondisable, setButtondisable] = useState(false); // Existing line
+
+  const toggleSecureText = () => {
+    setSecureText(!secureText);
+  };
+
   return (
     <View className='flex-1 p-3'>
       <View className="">
@@ -25,7 +27,7 @@ export default function LoginScreen() {
           }}
         />
       </View>
-      <Text className="text-xs font-bold  py-2 text-red-500">Login</Text>
+      <Text className="text-xs font-bold py-2 text-red-500">Login</Text>
       <TextInput
         right={<TextInput.Icon icon="account" />}
         className='mb-2'
@@ -37,34 +39,38 @@ export default function LoginScreen() {
       <TextInput
         right={
           <TextInput.Icon
-            icon={'eye'}
+            icon={secureText ? "eye" : "eye-off"}
+            onPress={toggleSecureText}
           />
         }
         className='mb-2'
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
-        secureTextEntry
+        secureTextEntry={secureText}
         mode="outlined"
       />
-      <View >
+      <View>
         <Button
           icon="login"
           mode="outlined"
-          onPress={() => {
+          onPress={async () => {
+            setButtondisable(true); // Show loading indicator
 
-            user.login(email, password);
-
+            try {
+              await user.login(email, password);
+            } catch (error) {
+              console.error(error); // Handle the error
+            } finally {
+              setButtondisable(false); // Hide loading indicator
+            }
           }}
           className="w-2/4 m-auto"
           loading={buttondisable}
         >
           Login
         </Button>
-
       </View>
     </View>
   );
 }
-
-

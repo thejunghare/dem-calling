@@ -123,6 +123,7 @@ export default function DataFetchingScreen({ navigation }) {
 
   useEffect(() => {
     const getjsondata = async () => {
+      setLoading(true);
       const url = "https://thejunghare.github.io/survey-app/src/json/data.json";
       try {
         const response = await fetch(url);
@@ -149,14 +150,19 @@ export default function DataFetchingScreen({ navigation }) {
     });
   }
 
-  function getlist() {
+  async function getlist() {
     setButtondisable(true);
-    if (division == '' || ward == '' || area == '' || building == '') {
-      showToast()
-    } else {
-      fetchlist(division, ward, area, building);
+    try {
+      if (division === '' || ward === '' || area === '' || building === '') {
+        showToast();
+      } else {
+        await fetchlist(division, ward, area, building);
+      }
+    } catch (error) {
+      console.error(error.message);
+    } finally {
+      setButtondisable(false);
     }
-    setButtondisable(false);
   }
 
 
