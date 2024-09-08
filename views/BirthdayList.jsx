@@ -1,33 +1,69 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   FlatList,
+  Linking,
 } from "react-native";
-import { Text, ActivityIndicator, Button } from "react-native-paper";
+import {
+  Text,
+  ActivityIndicator,
+  Button,
+  useTheme,
+  IconButton,
+} from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
 import { useCaller } from "../contexts/CallerContext";
 
 const BirthdayList = () => {
+  const theme = useTheme();
   const [division, setDivision] = useState("");
   const [divisions, setDivisions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { birhdaylist, fetchedDocuments, count } = useCaller();
+  const { birhdaylist, birthdayDocs, birthdayCount } = useCaller();
   const [buttondisable, setButtondisable] = useState(false);
 
   useEffect(() => {
     birhdaylist(division);
   }, [division]);
 
-  const renderItem = ({ item }) => (
-    <View>
-      <Text>{item.familyhead.name}</Text>
-      <Text>{item.familyhead.familyHeadBirthdate}</Text>
-    </View>
-  );
+  const renderItem = useCallback(({ item }) => {
+    const familyHeadData = JSON.parse(item.familyhead);
+    return (
+      <View className="flex flex-row items-center justify-between  my-2.5 w-full">
+        <View className="w-2/3 bg-white p-2.5 rounded-full">
+          <Text>{familyHeadData.familyHeadName}</Text>
+        </View>
+        <View className="flex flex-row">
+          <IconButton
+            className="rounded-full"
+            iconColor="#fff"
+            containerColor="#3EB489"
+            icon="call-made"
+            size={20}
+            onPress={() =>
+              Linking.openURL(`tel:${familyHeadData.familyHeadMobileNumber}`)
+            }
+          />
+          <IconButton
+            className="rounded-full"
+            iconColor="#fff"
+            containerColor="#03C03C"
+            icon="whatsapp"
+            size={20}
+            onPress={() =>
+              Linking.openURL(
+                `whatsapp://send?phone=${familyHeadData.familyHeadMobileNumber}`
+              )
+            }
+          />
+        </View>
+      </View>
+    );
+  }, []);
 
   useEffect(() => {
     const getjsondata = async () => {
@@ -56,20 +92,18 @@ const BirthdayList = () => {
   };
 
   async function getlist() {
-    setButtondisable(true);
-    await birhdaylist(division);
-    setButtondisable(false);
-    /*  try {
-      if (division === "" || ward === "" || area === "" || building === "") {
+    try {
+      setButtondisable(true);
+      if (division === "") {
         showToast();
       } else {
-        await fetchlist(division, ward, area, building);
+        await birhdaylist(division);
       }
     } catch (error) {
       console.error(error.message);
     } finally {
       setButtondisable(false);
-    } */
+    }
   }
 
   if (loading) {
@@ -81,14 +115,14 @@ const BirthdayList = () => {
   }
 
   return (
-    <SafeAreaView className="flex-1 p-3 bg-white">
+    <SafeAreaView className="flex-1 p-3">
       <ScrollView>
         <Text className="text-xs font-bold px-5 py-2 text-red-500">
           Options:
         </Text>
 
-        <View className="flex flex-row items-center justify-evenly m-2">
-          <View style={styles.pickerContainer}>
+        <View className="flex items-center justify-evenly m-2">
+          <View style={styles.pickerContainer} className="w-full mb-2">
             <Picker
               selectedValue={division}
               onValueChange={handleDivisionChange}
@@ -109,10 +143,12 @@ const BirthdayList = () => {
           <Button
             icon="database-search-outline"
             mode="contained"
-            buttonColor="#ED2939"
             onPress={getlist}
-            className="my-2 w-2/4 m-auto"
+            className="my-2 w-2/4 m-auto rounded-full"
             loading={buttondisable}
+            style={{
+              backgroundColor: theme.colors.primary,
+            }}
           >
             Search
           </Button>
@@ -123,9 +159,11 @@ const BirthdayList = () => {
             <ActivityIndicator size="large" color="#0000ff" />
           ) : (
             <FlatList
-              data={fetchedDocuments}
+              data={birthdayDocs}
               keyExtractor={(item) => item.$id}
               renderItem={renderItem}
+              initialNumToRender={10}
+              maxToRenderPerBatch={5}
             />
           )}
         </View>
@@ -138,11 +176,12 @@ const styles = StyleSheet.create({
   pickerContainer: {
     borderColor: "gray",
     borderWidth: 1,
-    borderRadius: 5,
+    borderRadius: 99,
+    height: 55,
   },
   picker: {
-    height: 42,
-    width: 170,
+    // height: 32,
+    width: 350,
   },
   label: {
     fontSize: 16,

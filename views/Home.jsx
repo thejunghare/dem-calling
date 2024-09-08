@@ -8,11 +8,12 @@ import {
   Image,
 } from "react-native";
 import { useUser } from "../contexts/UserContext";
-import { Button, IconButton, MD3Colors } from "react-native-paper";
+import { Button, IconButton, useTheme } from "react-native-paper";
 import * as Clipboard from "expo-clipboard";
 import { useCaller } from "../contexts/CallerContext";
 
 export default function HomeScreen({ navigation }) {
+  const theme = useTheme();
   const user = useUser();
   const {
     totalcount,
@@ -119,6 +120,10 @@ export default function HomeScreen({ navigation }) {
             icon="phone"
             mode="outlined"
             onPress={() => navigation.navigate("Fetch")}
+            className="rounded-full"
+            style={{
+              backgroundColor: theme.colors.onPrimary,
+            }}
           >
             Verification Calling
           </Button>
@@ -127,6 +132,10 @@ export default function HomeScreen({ navigation }) {
             icon="cake"
             mode="outlined"
             onPress={() => navigation.navigate("Birthday List")}
+            className="rounded-full"
+            style={{
+              backgroundColor: theme.colors.onPrimary,
+            }}
           >
             Birthday list
           </Button>
@@ -135,11 +144,23 @@ export default function HomeScreen({ navigation }) {
             icon="information-outline"
             onPress={() => navigation.navigate("Help")}
             mode="outlined"
+            className="rounded-full"
+            style={{
+              backgroundColor: theme.colors.onPrimary,
+            }}
           >
             About App & Help
           </Button>
 
-          <Button icon="logout" onPress={() => user.logout()} mode="outlined">
+          <Button
+            icon="logout"
+            onPress={() => user.logout()}
+            mode="outlined"
+            className="rounded-full"
+            style={{
+              backgroundColor: theme.colors.onPrimary,
+            }}
+          >
             End Session / Logout
           </Button>
         </View>

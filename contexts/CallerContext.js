@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { Query } from "react-native-appwrite";
 import { toast } from "../lib/toast";
 import { databases } from "../lib/appwrite";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 
 const DATABASE_ID = "66502c6e0015d7be8526";
 const CALLING_EMPLOYEE_COLLECTION_ID = "6";
@@ -17,23 +17,28 @@ export function useCaller() {
 export function CallerPrvoider(props) {
   const [fetchedDocuments, setFetchedDocuments] = useState([]);
   const [count, setCount] = useState(0);
+
   const [totalCallCount, setTotalCallCount] = useState(0);
   const [recallscount, setRecallscount] = useState(0);
   const [noAnswered, setNoAnswered] = useState(0);
   const [declined, setDeclined] = useState(0);
   const [completed, setCompleted] = useState(0);
-  const [updatedDate, setUpdatedDate] = useState('');
+
+  const [updatedDate, setUpdatedDate] = useState("");
+
+  const [birthdayDocs, setBirthdayDocs] = useState([]);
+  const [birthdayCount, setBirthdayCount] = useState(0);
 
   useEffect(() => {
     const currentdate = function () {
       const date = new Date();
-      const options = { year: 'numeric', month: 'short', day: 'numeric' };
-      setUpdatedDate(date.toLocaleString('en-US', options))
-    }
+      const options = { year: "numeric", month: "short", day: "numeric" };
+      setUpdatedDate(date.toLocaleString("en-US", options));
+    };
 
     //console.log(updatedDate)
-    currentdate()
-  })
+    currentdate();
+  });
 
   async function fetchlist(division, ward, area, building) {
     try {
@@ -75,17 +80,20 @@ export function CallerPrvoider(props) {
       setFetchedDocuments(allDocuments);
       setCount(allDocuments.length);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
     }
   }
 
-  async function birhdaylist (division){
+  async function birhdaylist(division) {
     try {
       let allDocuments = [];
       let lastDocumentId = null;
 
       const today = new Date();
-      const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+      const formattedDate = today.toLocaleDateString("en-US", {
+        month: "short",
+        day: "2-digit",
+      });
 
       const queries = [
         Query.orderDesc("$createdAt"),
@@ -106,9 +114,23 @@ export function CallerPrvoider(props) {
           additionalQueries
         );
 
-        const filteredDocuments = documents.filter(doc => {
-          const birthdate = doc.familyhead.familyHeadBirthdate.slice(4, 10); // Extract month and day from birthdate
-          return formattedDate === birthdate;
+        const filteredDocuments = documents.filter((doc) => {
+          let familyheadObj;
+
+          // Parse familyhead JSON string to an object
+          try {
+            familyheadObj = JSON.parse(doc.familyhead);
+          } catch (e) {
+            console.error("Error parsing familyhead:", e);
+            return false; // Skip the document if parsing fails
+          }
+
+          // Check if familyHeadBirthdate exists
+          const birthdate = familyheadObj.familyHeadBirthdate;
+          if (!birthdate) return false;
+
+          const birthdateFormatted = birthdate.slice(4, 10); // Extract month and day from birthdate
+          return formattedDate === birthdateFormatted;
         });
 
         allDocuments = [...allDocuments, ...filteredDocuments];
@@ -122,10 +144,11 @@ export function CallerPrvoider(props) {
         lastDocumentId = documents[documents.length - 1].$id;
       }
 
-      setFetchedDocuments(allDocuments);
-      setCount(allDocuments.length);
+      setBirthdayDocs(allDocuments);
+      console.log("birthdate info", birthdayDocs);
+      setBirthdayCount(allDocuments.length);
     } catch (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
     }
   }
 
@@ -133,7 +156,7 @@ export function CallerPrvoider(props) {
     const response = await databases.getDocument(
       DATABASE_ID,
       SURVEY_COLLECTION_ID,
-      surveyId,
+      surveyId
     );
     //toast("details fetched");
     //console.info(response.documents);
@@ -146,21 +169,21 @@ export function CallerPrvoider(props) {
         DATABASE_ID,
         SURVEY_COLLECTION_ID,
         DOCUMENT_ID,
-        UPDATED_DOCUMENT,
+        UPDATED_DOCUMENT
       );
       //toast("Updated Successfully");
       Toast.show({
-        type: 'success',
-        text1: 'survey updated!',
-        position: 'bottom'
+        type: "success",
+        text1: "survey updated!",
+        position: "bottom",
       });
       return result;
     } catch (error) {
       console.error(error);
       Toast.show({
-        type: 'error',
-        text1: 'try again!',
-        position: 'bottom'
+        type: "error",
+        text1: "try again!",
+        position: "bottom",
       });
     }
   }
@@ -173,7 +196,7 @@ export function CallerPrvoider(props) {
       [
         Query.equal("verification_employee_id", [userID]),
         Query.contains("verified_at", [updatedDate]),
-      ],
+      ]
     );
     const totalCallCount = response.documents.length;
     setTotalCallCount(totalCallCount);
@@ -187,12 +210,12 @@ export function CallerPrvoider(props) {
         Query.equal("calling_status", ["recall"]),
         Query.equal("verification_employee_id", [userId]),
         Query.contains("verified_at", [updatedDate]),
-      ],
+      ]
     );
 
     const recallscount = response.documents.length;
     setRecallscount(recallscount);
-  }
+  };
 
   const noanswer = async (userId) => {
     const response = await databases.listDocuments(
@@ -202,12 +225,12 @@ export function CallerPrvoider(props) {
         Query.equal("calling_status", ["no_answer"]),
         Query.equal("verification_employee_id", [userId]),
         Query.contains("verified_at", [updatedDate]),
-      ],
+      ]
     );
 
     const noAnswered = response.documents.length;
     setNoAnswered(noAnswered);
-  }
+  };
 
   const decline = async (userId) => {
     const response = await databases.listDocuments(
@@ -217,12 +240,12 @@ export function CallerPrvoider(props) {
         Query.contains("calling_status", "decline"),
         Query.equal("verification_employee_id", userId),
         Query.contains("verified_at", updatedDate),
-      ],
+      ]
     );
 
     const declined = response.documents.length;
     setDeclined(declined);
-  }
+  };
 
   const complete = async (userId) => {
     const response = await databases.listDocuments(
@@ -232,16 +255,35 @@ export function CallerPrvoider(props) {
         Query.equal("calling_status", ["complete"]),
         Query.equal("verification_employee_id", [userId]),
         Query.contains("verified_at", [updatedDate]),
-      ],
+      ]
     );
 
     const completed = response.documents.length;
     setCompleted(completed);
-  }
+  };
 
   return (
     <CallerContext.Provider
-      value={{ birhdaylist,fetchlist, fetchedDocuments, details, update, count, totalcount, totalCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
+      value={{
+        birhdaylist,
+        birthdayDocs,
+        birthdayCount,
+        fetchlist,
+        fetchedDocuments,
+        details,
+        update,
+        count,
+        totalcount,
+        totalCallCount,
+        recalls,
+        recallscount,
+        noanswer,
+        noAnswered,
+        decline,
+        declined,
+        complete,
+        completed,
+      }}
     >
       {props.children}
     </CallerContext.Provider>
