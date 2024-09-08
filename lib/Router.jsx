@@ -4,6 +4,7 @@ import HomeScreen from "../views/Home";
 import DataFetchingScreen from "../views/FetchDataForCalling";
 import DocumentDetailScreen from "../views/DocumentDetailsScreen";
 import Help from "../views/Help";
+import BirthdayList from "../views/BirthdayList";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useUser } from "../contexts/UserContext";
 
@@ -41,6 +42,11 @@ export function Router() {
               name="Help"
               component={Help}
               options={{ title: "Help" }}
+            />
+            <Stack.Screen
+              name="Birthday List"
+              component={BirthdayList}
+              options={{ title: "Birthday List" }}
             />
           </>
         )}

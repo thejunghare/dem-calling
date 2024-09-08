@@ -17,10 +17,10 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff",
-        "android.versionCode": 3
+        "backgroundColor": "#ffffff"
       },
-      "package": "com.thejunghare.demcalling"
+      "package": "com.thejunghare.demcalling",
+      "versionCode":3
     },
     "web": {
       "favicon": "./assets/favicon.png"

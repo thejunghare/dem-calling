@@ -35,8 +35,6 @@ export function CallerPrvoider(props) {
     currentdate()
   })
 
-
-  // const division = "Airoli Vidhan Sabha";
   async function fetchlist(division, ward, area, building) {
     try {
       let allDocuments = [];
@@ -64,6 +62,56 @@ export function CallerPrvoider(props) {
         );
 
         allDocuments = [...allDocuments, ...documents];
+
+        if (documents.length < 25) {
+          // If less than 25 documents were returned, we've fetched all available documents
+          break;
+        }
+
+        // Update lastDocumentId for pagination
+        lastDocumentId = documents[documents.length - 1].$id;
+      }
+
+      setFetchedDocuments(allDocuments);
+      setCount(allDocuments.length);
+    } catch (error) {
+      console.error('Error fetching documents:', error);
+    }
+  }
+
+  async function birhdaylist (division){
+    try {
+      let allDocuments = [];
+      let lastDocumentId = null;
+
+      const today = new Date();
+      const formattedDate = today.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
+
+      const queries = [
+        Query.orderDesc("$createdAt"),
+        Query.equal("division", division),
+        Query.equal("isRoomLocked", false),
+        Query.equal("surveyDenied", false),
+        // Query.equal("familyhead.familyHeadBirthdate", date),
+      ];
+
+      while (true) {
+        const additionalQueries = lastDocumentId
+          ? [...queries, Query.cursorAfter(lastDocumentId)]
+          : queries;
+
+        const { documents } = await databases.listDocuments(
+          DATABASE_ID,
+          SURVEY_COLLECTION_ID,
+          additionalQueries
+        );
+
+        const filteredDocuments = documents.filter(doc => {
+          const birthdate = doc.familyhead.familyHeadBirthdate.slice(4, 10); // Extract month and day from birthdate
+          return formattedDate === birthdate;
+        });
+
+        allDocuments = [...allDocuments, ...filteredDocuments];
 
         if (documents.length < 25) {
           // If less than 25 documents were returned, we've fetched all available documents
@@ -193,7 +241,7 @@ export function CallerPrvoider(props) {
 
   return (
     <CallerContext.Provider
-      value={{ fetchlist, fetchedDocuments, details, update, count, totalcount, totalCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
+      value={{ birhdaylist,fetchlist, fetchedDocuments, details, update, count, totalcount, totalCallCount, recalls, recallscount, noanswer, noAnswered, decline, declined, complete, completed }}
     >
       {props.children}
     </CallerContext.Provider>
