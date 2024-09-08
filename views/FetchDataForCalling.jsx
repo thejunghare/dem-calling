@@ -8,13 +8,13 @@ import {
   ActivityIndicator,
   SafeAreaView,
   ScrollView,
-  Alert
+  Alert,
 } from "react-native";
 import { useCaller } from "../contexts/CallerContext";
 // import { useUser } from "../contexts/UserContext";
 import { Button, Checkbox, Badge, Chip } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
 
 export default function DataFetchingScreen({ navigation }) {
   // const user = useUser();
@@ -79,32 +79,42 @@ export default function DataFetchingScreen({ navigation }) {
     let backgroundColor, color;
 
     switch (item.calling_status) {
-      case 'no_answer':
-        backgroundColor = '#FF4F00'; //orange
-        color = '#FFFFFF';
+      case "no_answer":
+        backgroundColor = "#ED9121"; //orange
+        color = "#FFFFFF";
         break;
-      case 'recall':
-        backgroundColor = '#FFBF00'; //yellow
-        color = '#000000';
+      case "recall":
+        backgroundColor = "#8DB600"; //green
+        color = "#000000";
         break;
-      case 'complete':
-        backgroundColor = '#6CB4EE'; //blue
-        color = '#FFFFFF';
+      case "complete":
+        backgroundColor = "#6CB4EE"; //blue
+        color = "#FFFFFF";
         break;
-      case 'decline':
-        backgroundColor = '#ED2939'; //red
-        color = '#FFFFFF';
+      case "decline":
+        backgroundColor = "#ED2939"; //red
+        color = "#FFFFFF";
+        break;
+      case "wrong_number":
+        backgroundColor = "#AF6E4D"; //brown
+        color = "#FFFFFF";
+        break;
+      case "busy":
+        backgroundColor = "#FFD700"; //gold
+        color = "#FFFFFF";
+        break;
+      case "switch_off":
+        backgroundColor = "#E5E4E2"; //sliver
+        color = "#FFFFFF";
         break;
       default:
-        backgroundColor = '#F4F0EC'; // white smoke
-        color = '#000000';
+        backgroundColor = "#F4F0EC"; // white smoke
+        color = "#000000";
     }
 
     return (
-      <TouchableOpacity
-        onPress={() => details(item.$id, navigation)}
-      >
-        <View className='flex flex-row items-center justify-evenly'>
+      <TouchableOpacity onPress={() => details(item.$id, navigation)}>
+        <View className="flex flex-row items-center justify-evenly">
           <Text
             className={`rounded-lg shadow-md font-medium text-base p-3 m-3 w-3/5`}
             style={{ backgroundColor, color }}
@@ -112,9 +122,13 @@ export default function DataFetchingScreen({ navigation }) {
             {item.roomNumber}
           </Text>
           {item.verification ? (
-            <Chip icon="information" mode="outlined">Verified</Chip>
+            <Chip icon="information" mode="outlined">
+              Verified
+            </Chip>
           ) : (
-            <Chip icon="information" mode="outlined">Pending</Chip>
+            <Chip icon="information" mode="outlined">
+              Pending
+            </Chip>
           )}
         </View>
       </TouchableOpacity>
@@ -144,16 +158,16 @@ export default function DataFetchingScreen({ navigation }) {
 
   const showToast = () => {
     Toast.show({
-      type: 'info',
-      text1: 'Options not selected!',
-      position: 'bottom'
+      type: "info",
+      text1: "Options not selected!",
+      position: "bottom",
     });
-  }
+  };
 
   async function getlist() {
     setButtondisable(true);
     try {
-      if (division === '' || ward === '' || area === '' || building === '') {
+      if (division === "" || ward === "" || area === "" || building === "") {
         showToast();
       } else {
         await fetchlist(division, ward, area, building);
@@ -165,10 +179,9 @@ export default function DataFetchingScreen({ navigation }) {
     }
   }
 
-
   if (loading) {
     return (
-      <View className='w-screen h-screen  flex items-center justify-center'>
+      <View className="w-screen h-screen  flex items-center justify-center">
         <ActivityIndicator size="large" animating={true} color="#0000ff" />
       </View>
     );
@@ -177,7 +190,9 @@ export default function DataFetchingScreen({ navigation }) {
   return (
     <SafeAreaView className="flex-1 p-3 bg-white">
       <ScrollView>
-        <Text className="text-xs font-bold px-5 py-2 text-red-500">Options:</Text>
+        <Text className="text-xs font-bold px-5 py-2 text-red-500">
+          Options:
+        </Text>
 
         <View className="flex flex-row items-center justify-evenly m-2">
           <View style={styles.pickerContainer}>
@@ -208,7 +223,11 @@ export default function DataFetchingScreen({ navigation }) {
             >
               <Picker.Item label="Ward *" value="" />
               {wards.map((ward) => (
-                <Picker.Item key={ward.id} label={ward.name} value={ward.name} />
+                <Picker.Item
+                  key={ward.id}
+                  label={ward.name}
+                  value={ward.name}
+                />
               ))}
             </Picker>
           </View>
@@ -224,7 +243,11 @@ export default function DataFetchingScreen({ navigation }) {
             >
               <Picker.Item label="Area *" value="" />
               {areas.map((area) => (
-                <Picker.Item key={area.id} label={area.name} value={area.name} />
+                <Picker.Item
+                  key={area.id}
+                  label={area.name}
+                  value={area.name}
+                />
               ))}
             </Picker>
           </View>
@@ -279,7 +302,7 @@ export default function DataFetchingScreen({ navigation }) {
           mode="contained"
           buttonColor="#ED2939"
           onPress={getlist}
-          className='my-2 w-2/4 m-auto'
+          className="my-2 w-2/4 m-auto"
           loading={buttondisable}
         >
           Search
@@ -289,7 +312,9 @@ export default function DataFetchingScreen({ navigation }) {
           Documents fetched: {count}
         </Text> */}
 
-        <Text className="text-xs font-bold px-5 py-2 text-red-500">Surveys: {count}</Text>
+        <Text className="text-xs font-bold px-5 py-2 text-red-500">
+          Surveys: {count}
+        </Text>
 
         <View className="h-15">
           <FlatList

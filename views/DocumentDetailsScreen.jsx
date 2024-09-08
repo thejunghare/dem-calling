@@ -7,6 +7,7 @@ import {
   Linking,
   FlatList,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 import { IconButton, TextInput, Button } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
@@ -14,8 +15,8 @@ import { useCaller } from "../contexts/CallerContext";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useUser } from "../contexts/UserContext";
 import * as Clipboard from "expo-clipboard";
-import DateTimePicker from '@react-native-community/datetimepicker';
-import Toast from 'react-native-toast-message';
+import DateTimePicker from "@react-native-community/datetimepicker";
+import Toast from "react-native-toast-message";
 
 export default function DocumentDetailScreen({ route, navigation }) {
   const { survey } = route.params;
@@ -25,7 +26,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
   const familyHeadData = JSON.parse(survey.familyhead);
   // console.info(`family head json: ${familyHeadData}`);
   const [buttondisable, setButtondisable] = useState(false);
-  // calling employee verification 
+  // calling employee verification
   const [callingStatus, setCallingStatus] = useState(survey.calling_status);
   const [callingRemark, setCallingRemark] = useState(survey.calling_remark);
   const [verification, setVerification] = useState(false);
@@ -34,26 +35,42 @@ export default function DocumentDetailScreen({ route, navigation }) {
   const [nativeplace, setNativeplace] = useState(survey.native);
   const [surveyremark, setSurveyremark] = useState(survey.surveyRemark);
   const [membercount, setMembercount] = useState(survey.memberCount);
+  const [roomNumber, setRoomNumber] = useState(survey.roomNumber);
 
   // family data
-  const [familyheadname, setFamilyheadname] = useState(familyHeadData.familyHeadName);
-  const [familyheadphonenumber, setFamilyheadphonenumber] = useState(familyHeadData.familyHeadMobileNumber);
-  const [familyheadeducation, setFamilyHeadEducation] = useState(familyHeadData.familyHeadEducation);
+  const [familyheadname, setFamilyheadname] = useState(
+    familyHeadData.familyHeadName
+  );
+  const [familyheadphonenumber, setFamilyheadphonenumber] = useState(
+    familyHeadData.familyHeadMobileNumber
+  );
+  const [familyheadeducation, setFamilyHeadEducation] = useState(
+    familyHeadData.familyHeadEducation
+  );
   const [caste, setCaste] = useState(familyHeadData.caste);
-  const [birthdate, setBirthdate] = useState(familyHeadData.familyHeadBirthdate);
+  const [birthdate, setBirthdate] = useState(
+    familyHeadData.familyHeadBirthdate
+  );
   const [age, setAge] = useState(familyHeadData.familyHeadAge);
-  const [familyheadvoterpoll, setFamilyheadvoterpoll] = useState(familyHeadData.voterPoll);
-  const [familyheadvoterpollarea, setFamilyheadvoterpollarea] = useState(familyHeadData.voterPollArea);
+  const [voter, setVoter] = useState(familyHeadData.voter);
+  const [newVoter, setNewVoter] = useState(familyHeadData.newVoterRegistration);
+  const [familyheadvoterpoll, setFamilyheadvoterpoll] = useState(
+    familyHeadData.voterPoll
+  );
+  const [familyheadvoterpollarea, setFamilyheadvoterpollarea] = useState(
+    familyHeadData.voterPollArea
+  );
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showMemberDatePicker, setMemberShowDatePicker] = useState({});
   const [updatedDate, setUpdatedate] = useState();
 
+  // for family head
   const handleBirthdateChange = (event, selectedDate) => {
-    //const currentDate = selectedDate || new Date();
     setShowDatePicker(false);
 
     if (selectedDate) {
-      const birthdate = selectedDate.toISOString().split('T')[0]; // Format the date as YYYY-MM-DD
+      const birthdate = selectedDate.toISOString().split("T")[0]; // Format the date as YYYY-MM-DD
       const age = calculateAge(selectedDate); // Calculate the age
       setBirthdate(birthdate);
       setAge(age.toString());
@@ -65,7 +82,10 @@ export default function DocumentDetailScreen({ route, navigation }) {
     const birthDate = new Date(birthdate);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDifference = today.getMonth() - birthDate.getMonth();
-    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+    if (
+      monthDifference < 0 ||
+      (monthDifference === 0 && today.getDate() < birthDate.getDate())
+    ) {
       age--;
     }
     return age;
@@ -88,23 +108,17 @@ export default function DocumentDetailScreen({ route, navigation }) {
   };
 
   const handlememberschange = (value, memberId, field) => {
-    setMembers(prevMembers =>
-      prevMembers.map(member =>
+    setMembers((prevMembers) =>
+      prevMembers.map((member) =>
         member.memberId === memberId ? { ...member, [field]: value } : member
       )
     );
-  }
+  };
 
   // Component to render a single member item
   const renderMemberItem = ({ item }) => {
     return (
-      <View
-        style={{
-          borderBottomWidth: 1,
-          borderColor: "red",
-          borderTopWidth: 1,
-        }}
-      >
+      <View>
         <TextInput
           value={item.memberId}
           style={styles.input}
@@ -112,74 +126,154 @@ export default function DocumentDetailScreen({ route, navigation }) {
           label="Member ID"
           disabled={true}
         />
+
         <TextInput
           value={item.memberName}
           style={styles.input}
           mode="outlined"
           label="Full Name"
-          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberName')}
+          onChangeText={(text) =>
+            handlememberschange(text, item.memberId, "memberName")
+          }
         />
-        <TextInput
+
+        {/* <TextInput
           value={item.memberBirthdate}
           style={styles.input}
           mode="outlined"
           label="Birthdate"
           onChangeText={(text) => handlememberschange(text, item.memberId, 'memberBirthdate')}
-        />
-        <TextInput
-          value={item.memberMobileNumber}
-          style={styles.input}
-          mode="outlined"
-          label="Mobile Number"
-          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberMobileNumber')}
-        />
-        <TextInput
-          value={item.memberEducation}
-          style={styles.input}
-          mode="outlined"
-          label="Education"
-          onChangeText={(text) => handlememberschange(text, item.memberId, 'memberEducation')}
-        />
-        <TextInput
-          value={item.voter}
-          style={styles.input}
-          mode="outlined"
-          label="Voter"
-        />
-        <TextInput
+        /> */}
+
+        {/* <TextInput
           value={item.memberAge}
           style={styles.input}
           mode="outlined"
           label="Age"
           onChangeText={(text) => handlememberschange(text, item.memberId, 'memberAge')}
-        />
+        /> */}
+
         <TextInput
-          value={item.voterPoll}
+          value={item.memberMobileNumber}
           style={styles.input}
           mode="outlined"
-          label="Voter Poll"
-          onChangeText={(text) => handlememberschange(text, item.memberId, 'voterPoll')}
+          label="Mobile Number"
+          onChangeText={(text) =>
+            handlememberschange(text, item.memberId, "memberMobileNumber")
+          }
         />
+
         <TextInput
-          value={item.voterPollArea}
+          value={item.memberEducation}
           style={styles.input}
           mode="outlined"
-          label="Voter Poll Area"
-          onChangeText={(text) => handlememberschange(text, item.memberId, 'voterPollArea')}
+          label="Education"
+          onChangeText={(text) =>
+            handlememberschange(text, item.memberId, "memberEducation")
+          }
         />
-        <TextInput
-          value={item.newVoterRegistration}
-          style={styles.input}
-          mode="outlined"
-          label="New Registration"
-        />
+
+        <View key={item.memberId} className="">
+          <TouchableOpacity
+            onPress={() => showMemberDatePickerModal(item.memberId)}
+          >
+            <TextInput
+              value={item.memberBirthdate || ""}
+              placeholder="Birthdate"
+              label="Birthdate"
+              editable={false}
+              mode="outlined"
+              style={styles.input}
+            />
+          </TouchableOpacity>
+          {showMemberDatePicker[item.memberId] && (
+            <DateTimePicker
+              value={new Date(item.memberBirthdate || new Date())}
+              mode="date"
+              display="spinner"
+              editable={false}
+              onChange={(event, date) =>
+                handleMemberDateChange(item.memberId, event, date)
+              }
+            />
+          )}
+          <TextInput
+            mode="outlined"
+            style={styles.input}
+            value={item.memberAge || ""}
+            label="Age"
+            keyboardType="numeric"
+            editable={false}
+          />
+        </View>
+
+        <Text className="text-xs font-bold px-3 my-2">Are You A voter?</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={item.voter}
+            onValueChange={(value) =>
+              handlememberschange(value, item.memberId, "voter")
+            }
+          >
+            <Picker.Item label="Are You A voter?" value="" />
+            <Picker.Item label="Yes" value="yes" />
+            <Picker.Item label="No" value="no" />
+          </Picker>
+        </View>
+
+        {item.voter === "no" ? (
+          <View>
+            <Text className="text-xs font-bold px-3 my-2">
+              Register As New Voter?
+            </Text>
+
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={item.newVoterRegistration}
+                onValueChange={(value) =>
+                  handlememberschange(
+                    value,
+                    item.memberId,
+                    "newVoterRegistration"
+                  )
+                }
+              >
+                <Picker.Item label="Register As New Voter" value="" />
+                <Picker.Item label="Yes" value="yes" />
+                <Picker.Item label="No" value="no" />
+              </Picker>
+            </View>
+          </View>
+        ) : (
+          <>
+            <TextInput
+              value={item.voterPoll}
+              style={styles.input}
+              mode="outlined"
+              label="Voter Poll"
+              onChangeText={(text) =>
+                handlememberschange(text, item.memberId, "voterPoll")
+              }
+            />
+            <TextInput
+              value={item.voterPollArea}
+              style={styles.input}
+              mode="outlined"
+              label="Voter Poll Area"
+              onChangeText={(text) =>
+                handlememberschange(text, item.memberId, "voterPollArea")
+              }
+            />
+          </>
+        )}
+
         {item.isNew && (
           <Button
             icon="account-remove-outline"
             buttonColor="#C51E3A"
             mode="contained"
             onPress={() => removeMember(item.memberId)}
-            className='w-2/4 m-auto'
+            className="w-2/4 m-auto"
           >
             Remove
           </Button>
@@ -192,26 +286,66 @@ export default function DocumentDetailScreen({ route, navigation }) {
     const newMemberId = members.length + 1;
     const newMember = {
       memberId: newMemberId.toString(),
-      memberName: '',
-      memberBirthdate: '',
-      memberMobileNumber: '',
-      memberEducation: '',
-      voter: '',
-      memberAge: '',
-      voterPoll: '',
-      voterPollArea: '',
-      newVoterRegistration: '',
-      isNew: true
+      memberName: "",
+      memberBirthdate: "",
+      memberMobileNumber: "",
+      memberEducation: "",
+      voter: "",
+      memberAge: "",
+      voterPoll: "",
+      voterPollArea: "",
+      newVoterRegistration: "",
+      isNew: true,
     };
 
     setMembers([...members, newMember]);
   };
 
   const removeMember = (memberId) => {
-    setMembers(prevMembers => prevMembers.filter(member => member.memberId !== memberId));
+    setMembers((prevMembers) =>
+      prevMembers.filter((member) => member.memberId !== memberId)
+    );
   };
 
+  // for members birthdate
+  const showMemberDatePickerModal = (memberId) => {
+    setMemberShowDatePicker({
+      ...showMemberDatePicker,
+      [memberId]: true,
+    });
+  };
 
+  // for members birthdate
+  const handleMemberDateChange = (memberId, event, selectedDate) => {
+    if (event.type === "set") {
+      const currentDate =
+        selectedDate ||
+        new Date(
+          members.find((member) => member.memberId === memberId)
+            .memberBirthdate || new Date()
+        );
+      const birthdate = new Date(currentDate);
+
+      const newMembers = members.map((member) =>
+        member.memberId === memberId
+          ? {
+              ...member,
+              memberBirthdate: birthdate.toISOString().split("T")[0],
+              memberAge: (
+                new Date().getFullYear() - birthdate.getFullYear()
+              ).toString(),
+            }
+          : member
+      );
+
+      setMembers(newMembers);
+    }
+
+    setMemberShowDatePicker({
+      ...showDatePicker,
+      [memberId]: false,
+    });
+  };
 
   // copy survey ID
   const copySurveyIdToClipboard = async () => {
@@ -237,27 +371,36 @@ export default function DocumentDetailScreen({ route, navigation }) {
       familyHeadBirthdate: birthdate,
       familyHeadAge: age,
       caste: caste,
+      voter: voter,
+      newVoterRegistration: newVoter,
       voterPoll: familyheadvoterpoll,
-      voterPollArea: familyheadvoterpoll
-    }
+      voterPollArea: familyheadvoterpoll,
+    };
     setVerification(true);
     //console.log(DOCUMENT_ID);
     //console.log(VERFICATIONEMPLOYEEID)
 
     function currentdate() {
       const date = new Date();
-      const options = { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
-      return date.toLocaleString('en-US', options);
+      const options = {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      };
+      return date.toLocaleString("en-US", options);
     }
 
-    const updatedDate = currentdate()
-    setUpdatedate(updatedDate)
+    const updatedDate = currentdate();
+    setUpdatedate(updatedDate);
     console.log(updatedDate);
 
     const DATA = {
       familyhead: JSON.stringify(updatedfamilydata),
       members: JSON.stringify(members),
       native: nativeplace,
+      roomNumber: roomNumber,
       memberCount: membercount,
       surveyRemark: surveyremark,
       calling_remark: callingRemark,
@@ -267,21 +410,24 @@ export default function DocumentDetailScreen({ route, navigation }) {
       verified_at: updatedDate,
     };
 
-
-    if (!VERFICATIONEMPLOYEEID || !updatedDate || callingRemark == '' || !callingStatus) {
+    if (
+      !VERFICATIONEMPLOYEEID ||
+      !updatedDate ||
+      callingRemark == "" ||
+      !callingStatus
+    ) {
       const showErrorToast = () => {
         Toast.show({
-          type: 'error',
-          text1: 'Field required',
-          text2: 'fields are required unless marked optional!',
-          position: 'bottom'
+          type: "error",
+          text1: "Field required",
+          text2: "fields are required unless marked optional!",
+          position: "bottom",
         });
-      }
+      };
       showErrorToast();
       setButtondisable(false);
     } else {
-      if (await update(DOCUMENT_ID, DATA))
-        setButtondisable(false);
+      if (await update(DOCUMENT_ID, DATA)) setButtondisable(false);
     }
 
     setButtondisable(false);
@@ -289,7 +435,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
 
   if (!survey || !survey.familyhead) {
     return (
-      <View className='w-screen h-screen  flex items-center justify-center'>
+      <View className="w-screen h-screen  flex items-center justify-center">
         <ActivityIndicator size="large" animating={true} color="#0000ff" />
       </View>
     );
@@ -349,19 +495,17 @@ export default function DocumentDetailScreen({ route, navigation }) {
         </View>
 
         <Text className="text-xs font-bold px-3 pt-2">
-          Unmutable Information
-        </Text>
-        <View className="p-4 bg-white rounded-lg mt-2">
-          <View className="flex-row">
-            <Text className="text-base font-semibold">Room Number:</Text>
-
-            <Text className="text-base ml-2"> {survey.roomNumber}</Text>
-          </View>
-        </View>
-
-        <Text className="text-xs font-bold px-3 pt-2">
           Collected Information
         </Text>
+        {/* Room number */}
+        <TextInput
+          label="Room Number"
+          value={roomNumber}
+          onChangeText={(text) => setRoomNumber(text)}
+          style={styles.input}
+          mode="outlined"
+        />
+
         {/* native place */}
         <TextInput
           label="Native Place"
@@ -400,68 +544,94 @@ export default function DocumentDetailScreen({ route, navigation }) {
         {/* family head phone number */}
         <TextInput
           label="Family Head Phone Number"
-          // value={familyHeadData.familyHeadMobileNumber}
           value={familyheadphonenumber}
           onChangeText={(text) => setFamilyheadphonenumber(text)}
           style={styles.input}
           mode="outlined"
         />
 
-        <TextInput
-          label="Family Head Birthdate"
-          value={birthdate}
-          style={styles.input}
-          mode="outlined"
-          onChangeText={(text) => setBirthdate(text)}
-        />
-
-
-        {/* family head age */}
-        <TextInput
-          label="Family Head Age"
-          value={age}
-          style={styles.input}
-          mode="outlined"
-          onChangeText={(text) => setAge(text)}
-        />
+        <View>
+          <TextInput
+            label="Family Head Birthdate"
+            value={birthdate}
+            style={styles.input}
+            mode="outlined"
+            onFocus={() => setShowDatePicker(true)}
+          />
+          <TextInput
+            label="Family Head Age"
+            value={age}
+            style={styles.input}
+            mode="outlined"
+            editable={false}
+          />
+          {showDatePicker && (
+            <DateTimePicker
+              value={new Date(birthdate)}
+              mode="date"
+              display="spinner"
+              onChange={handleBirthdateChange}
+            />
+          )}
+        </View>
 
         {/* family head education */}
         <TextInput
           label="Family Head Education"
-          //value={familyHeadData.familyHeadEducation}
           value={familyheadeducation}
           onChangeText={(text) => setFamilyHeadEducation(text)}
           style={styles.input}
           mode="outlined"
         />
 
-        {/* family head voter */}
-        <TextInput
-          label="Voter"
-          value={familyHeadData.voter}
-          style={styles.input}
-          mode="outlined"
-        />
+        <Text className="text-xs font-bold px-3 my-2">Are You A voter?</Text>
+        <View style={styles.pickerContainer}>
+          <Picker
+            selectedValue={voter}
+            onValueChange={(value) => setVoter(value)}
+          >
+            <Picker.Item label="Is Voter" value="" />
+            <Picker.Item label="Yes" value="yes" />
+            <Picker.Item label="No" value="no" />
+          </Picker>
+        </View>
+        {voter === "yes" ? (
+          <>
+            {/* voter poll */}
+            <TextInput
+              label="Family Head Voter Poll"
+              value={familyheadvoterpoll}
+              onChangeText={(text) => setFamilyheadvoterpoll(text)}
+              style={styles.input}
+              mode="outlined"
+            />
 
-        {/* voter poll */}
-        <TextInput
-          label="Family Head Voter Poll"
-          //value={familyHeadData.familyHeadEducation}
-          value={familyheadvoterpoll}
-          onChangeText={(text) => setFamilyheadvoterpoll(text)}
-          style={styles.input}
-          mode="outlined"
-        />
-
-        {/* voter poll area */}
-        <TextInput
-          label="Family Head Voter Poll Area"
-          //value={familyHeadData.familyHeadEducation}
-          value={familyheadvoterpollarea}
-          onChangeText={(text) => setFamilyheadvoterpollarea(text)}
-          style={styles.input}
-          mode="outlined"
-        />
+            {/* voter register */}
+            <TextInput
+              label="Family Head Voter Poll Area"
+              value={familyheadvoterpollarea}
+              onChangeText={(text) => setFamilyheadvoterpollarea(text)}
+              style={styles.input}
+              mode="outlined"
+            />
+          </>
+        ) : (
+          <>
+            <Text className="text-xs font-bold px-3 my-2">
+              Register As New Voter?
+            </Text>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={newVoter}
+                onValueChange={(value) => setNewVoter(value)}
+              >
+                <Picker.Item label="New Voter Register" value="" />
+                <Picker.Item label="Yes" value="yes" />
+                <Picker.Item label="No" value="no" />
+              </Picker>
+            </View>
+          </>
+        )}
 
         {/* member */}
         <Text className="text-xs font-bold px-3 pt-2">Member Information</Text>
@@ -493,6 +663,9 @@ export default function DocumentDetailScreen({ route, navigation }) {
             <Picker.Item label="Decline" value="decline" />
             <Picker.Item label="No Answer" value="no_answer" />
             <Picker.Item label="Recall" value="recall" />
+            <Picker.Item label="Switch Off" value="switch_off" />
+            <Picker.Item label="Wrong Number" value="wrong_number" />
+            <Picker.Item label="Busy" value="busy" />
           </Picker>
         </View>
 
@@ -528,19 +701,18 @@ export default function DocumentDetailScreen({ route, navigation }) {
           </Button>
         </View>
 
-        <View className='my-3'>
+        <View className="my-3">
           <Button
             icon="square-edit-outline"
             buttonColor="#6CB4EE"
             mode="contained"
             onPress={handleVerifyDocument}
             loading={buttondisable}
-            className='m-auto w-2/4'
+            className="m-auto w-2/4"
           >
             Update Form
           </Button>
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
