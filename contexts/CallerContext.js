@@ -95,12 +95,13 @@ export function CallerPrvoider(props) {
         day: "2-digit",
       });
 
+      const memberFormattedDate = today.toISOString().slice(5, 10); // Get "MM-DD" for member's birthdate comparison
+
       const queries = [
         Query.orderDesc("$createdAt"),
         Query.equal("division", division),
         Query.equal("isRoomLocked", false),
         Query.equal("surveyDenied", false),
-        // Query.equal("familyhead.familyHeadBirthdate", date),
       ];
 
       while (true) {
@@ -116,6 +117,7 @@ export function CallerPrvoider(props) {
 
         const filteredDocuments = documents.filter((doc) => {
           let familyheadObj;
+          let memberArray = [];
 
           // Parse familyhead JSON string to an object
           try {
@@ -125,27 +127,46 @@ export function CallerPrvoider(props) {
             return false; // Skip the document if parsing fails
           }
 
-          // Check if familyHeadBirthdate exists
-          const birthdate = familyheadObj.familyHeadBirthdate;
-          if (!birthdate) return false;
+          // Handle family head birthdate format (Mon Sep 09 2024)
+          const familyHeadBirthdate = familyheadObj.familyHeadBirthdate;
+          const familyHeadMatch = familyHeadBirthdate
+            ? formattedDate === familyHeadBirthdate.slice(4, 10)
+            : false;
 
-          const birthdateFormatted = birthdate.slice(4, 10); // Extract month and day from birthdate
-          return formattedDate === birthdateFormatted;
+          // Handle member array, check if it is a valid string before parsing
+          if (typeof doc.member === "string") {
+            try {
+              memberArray = JSON.parse(doc.member);
+            } catch (e) {
+              console.error("Error parsing member array:", e);
+              return false; // Skip the document if parsing fails
+            }
+          } else if (Array.isArray(doc.member)) {
+            memberArray = doc.member;
+          }
+
+          // Check if any member's birthdate matches the current date (YYYY-MM-DD format)
+          const memberMatch = memberArray.some((member) => {
+            const memberBirthdate = member.memberBirthdate;
+            return memberBirthdate
+              ? memberFormattedDate === memberBirthdate.slice(5, 10) // Compare only MM-DD
+              : false;
+          });
+
+          // Return true if either family head or any member's birthdate matches
+          return familyHeadMatch || memberMatch;
         });
 
         allDocuments = [...allDocuments, ...filteredDocuments];
 
         if (documents.length < 25) {
-          // If less than 25 documents were returned, we've fetched all available documents
-          break;
+          break; // End if less than 25 documents were returned
         }
 
-        // Update lastDocumentId for pagination
         lastDocumentId = documents[documents.length - 1].$id;
       }
 
       setBirthdayDocs(allDocuments);
-      console.log("birthdate info", birthdayDocs);
       setBirthdayCount(allDocuments.length);
     } catch (error) {
       console.error("Error fetching documents:", error);

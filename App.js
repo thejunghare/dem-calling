@@ -18,20 +18,23 @@ import { UserProvider } from "./contexts/UserContext";
 import { IdeasProvider } from "./contexts/SurveyContext"; // Add import
 import { CallerPrvoider } from "./contexts/CallerContext";
 import { Router } from "./lib/Router";
-import Toast from 'react-native-toast-message';
-import { StatusBar } from 'expo-status-bar';
+import Toast from "react-native-toast-message";
+import { StatusBar } from "expo-status-bar";
+import { PaperProvider } from "react-native-paper";
 
 export default function App() {
   return (
-    <UserProvider>
-      <IdeasProvider>
-        <CallerPrvoider>
-          <Router />
-          <StatusBar style="auto" />
-          <Toast />
-        </CallerPrvoider>
-      </IdeasProvider>
-    </UserProvider>
+    <PaperProvider theme={{ version: 2 }}>
+      <UserProvider>
+        <IdeasProvider>
+          <CallerPrvoider>
+            <Router />
+            <StatusBar style="auto" />
+            <Toast />
+          </CallerPrvoider>
+        </IdeasProvider>
+      </UserProvider>
+    </PaperProvider>
   );
 }
 

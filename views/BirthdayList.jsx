@@ -32,12 +32,43 @@ const BirthdayList = () => {
 
   const renderItem = useCallback(({ item }) => {
     const familyHeadData = JSON.parse(item.familyhead);
+    let memberArray = [];
+
+    // Check if the 'member' field is a string or an array
+    if (typeof item.member === "string") {
+      try {
+        memberArray = JSON.parse(item.member);
+      } catch (e) {
+        console.error("Error parsing member array:", e);
+      }
+    } else if (Array.isArray(item.member)) {
+      memberArray = item.member;
+    }
+
     return (
-      <View className="flex flex-row items-center justify-between  my-2.5 w-full">
-        <View className="w-2/3 bg-white p-2.5 rounded-full">
-          <Text>{familyHeadData.familyHeadName}</Text>
+      <View className="flex flex-row items-center justify-between my-2.5 w-full">
+        <View className="w-4/5 bg-white p-2.5 rounded-md">
+          {/* Family Head Information */}
+          <Text>Name: {familyHeadData.familyHeadName}</Text>
+          <Text>
+            Add: {item.roomNumber}, {item.building}, {item.area},{" "}
+            {item.division}
+          </Text>
+          <Text>DOB: {familyHeadData.familyHeadBirthdate}</Text>
+
+          {/* Render Members */}
+          {memberArray.length > 0 &&
+            memberArray.map((member, index) => (
+              <View key={index} className="mt-2">
+                <Text>Member Name: {member.memberName}</Text>
+                <Text>Member DOB: {member.memberBirthdate}</Text>
+                <Text>Member Mobile: {member.memberMobileNumber}</Text>
+              </View>
+            ))}
         </View>
-        <View className="flex flex-row">
+
+        <View className="flex items-center w-1/6">
+          {/* Call and WhatsApp for Family Head */}
           <IconButton
             className="rounded-full"
             iconColor="#fff"
@@ -95,13 +126,48 @@ const BirthdayList = () => {
     try {
       setButtondisable(true);
       if (division === "") {
-        showToast();
+        const showErrorToast = () => {
+          Toast.show({
+            type: "info",
+            text1: "Options not selected!",
+            text2: "Try selecting options",
+            position: "bottom",
+          });
+        };
+        showErrorToast();
       } else {
+        const showfetching = () => {
+          Toast.show({
+            type: "info",
+            text1: "Getthng birthdate...!",
+            text2: "This might take some time!",
+            position: "bottom",
+          });
+        };
+        showfetching();
         await birhdaylist(division);
       }
     } catch (error) {
+      const showfetchingerror = () => {
+        Toast.show({
+          type: "error",
+          text1: "Something went wrong!",
+          text2: `Try again later! ${error}`,
+          position: "bottom",
+        });
+      };
+      showfetchingerror();
       console.error(error.message);
     } finally {
+      const showfetchingsuccess = () => {
+        Toast.show({
+          type: "success",
+          text1: "That's it!",
+          text2: `List Updated!`,
+          position: "bottom",
+        });
+      };
+      showfetchingsuccess();
       setButtondisable(false);
     }
   }
@@ -121,8 +187,8 @@ const BirthdayList = () => {
           Options:
         </Text>
 
-        <View className="flex items-center justify-evenly m-2">
-          <View style={styles.pickerContainer} className="w-full mb-2">
+        <View className="flex flex-row w-full items-center justify-evenly m-2">
+          <View style={styles.pickerContainer} className="w-2/5 mb-2">
             <Picker
               selectedValue={division}
               onValueChange={handleDivisionChange}
@@ -144,7 +210,7 @@ const BirthdayList = () => {
             icon="database-search-outline"
             mode="contained"
             onPress={getlist}
-            className="my-2 w-2/4 m-auto rounded-full"
+            className="my-2 w-2/5 m-auto rounded-full"
             loading={buttondisable}
             style={{
               backgroundColor: theme.colors.primary,
@@ -154,6 +220,9 @@ const BirthdayList = () => {
           </Button>
         </View>
 
+        <Text className="text-xs font-bold px-5 py-2 text-red-500">
+          Birthdate list: {birthdayCount}
+        </Text>
         <View style={{ flex: 1, padding: 16 }}>
           {loading ? (
             <ActivityIndicator size="large" color="#0000ff" />
@@ -174,14 +243,14 @@ const BirthdayList = () => {
 
 const styles = StyleSheet.create({
   pickerContainer: {
-    borderColor: "gray",
-    borderWidth: 1,
-    borderRadius: 99,
+    // borderColor: "gray",
+    // borderWidth: 1,
+    // borderRadius: 99,
     height: 55,
   },
   picker: {
     // height: 32,
-    width: 350,
+    width: 150,
   },
   label: {
     fontSize: 16,
