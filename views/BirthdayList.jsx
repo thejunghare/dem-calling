@@ -17,6 +17,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
 import { useCaller } from "../contexts/CallerContext";
+import * as Clipboard from "expo-clipboard";
 
 const BirthdayList = () => {
   const theme = useTheme();
@@ -30,9 +31,20 @@ const BirthdayList = () => {
     birhdaylist(division);
   }, [division]);
 
+  const copy_birthday_info = async () => {
+    const info = `Name: ${familyHeadData.familyHeadName}, Address: ${item.roomNumber}, ${item.building}, ${item.area}, ${item.division}, DOB: ${familyHeadData.familyHeadBirthdate}`;
+    await Clipboard.setStringAsync(info);
+  };
+
+
   const renderItem = useCallback(({ item }) => {
     const familyHeadData = JSON.parse(item.familyhead);
     let memberArray = [];
+
+    const copy_birthday_info = async () => {
+      const info = `Name: ${familyHeadData.familyHeadName}, Address: ${item.roomNumber}, ${item.building}, ${item.area}, ${item.division}, DOB: ${familyHeadData.familyHeadBirthdate}`;
+      await Clipboard.setStringAsync(info);
+    };
 
     // Check if the 'member' field is a string or an array
     if (typeof item.member === "string") {
@@ -49,12 +61,17 @@ const BirthdayList = () => {
       <View className="flex flex-row items-center justify-between my-2.5 w-full">
         <View className="w-4/5 bg-white p-2.5 rounded-md">
           {/* Family Head Information */}
-          <Text>Name: {familyHeadData.familyHeadName}</Text>
           <Text>
-            Add: {item.roomNumber}, {item.building}, {item.area},{" "}
-            {item.division}
+            Name: {familyHeadData.familyHeadName}
           </Text>
-          <Text>DOB: {familyHeadData.familyHeadBirthdate}</Text>
+            <Text>
+            Add: {item.roomNumber}, {item.building}, {item.area}, {item.division}
+            </Text>
+            <Text>
+            DOB: {familyHeadData.familyHeadBirthdate}
+          </Text>
+
+
 
           {/* Render Members */}
           {memberArray.length > 0 &&
@@ -91,10 +108,18 @@ const BirthdayList = () => {
               )
             }
           />
+
+          <IconButton
+            icon="content-copy"
+            iconColor={"black"}
+            size={20}
+            onPress={copy_birthday_info}
+          />
         </View>
       </View>
     );
   }, []);
+
 
   useEffect(() => {
     const getjsondata = async () => {

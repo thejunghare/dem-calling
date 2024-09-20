@@ -1,6 +1,8 @@
 {
   "cli": {
-    "version": ">= 11.0.2"
+    "version": ">= 11.0.2",
+    "promptToConfigurePushNotifications": false,
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -8,10 +10,14 @@
       "distribution": "internal"
     },
     "preview": {
-      "distribution": "internal"
-      
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }     
     },
-    "production": {}
+    "production": {
+      "autoIncrement": true
+    }
   },
   "submit": {
     "production": {}
