@@ -48,11 +48,12 @@ export function CallerPrvoider(props) {
     currentdate();
   });
 
-  async function fetchlist(division, ward, area, building) {
+  async function fetchlist(division, ward, area, building, calling_status) {
     try {
       let allDocuments = [];
       let lastDocumentId = null;
 
+      // Start with base queries
       const queries = [
         Query.orderDesc("$createdAt"),
         Query.equal("division", division),
@@ -63,6 +64,12 @@ export function CallerPrvoider(props) {
         Query.equal("surveyDenied", false),
       ];
 
+      // Add calling_status filter dynamically
+      if (calling_status) {
+        queries.push(Query.equal("calling_status", calling_status));
+      }
+
+      // Pagination loop
       while (true) {
         const additionalQueries = lastDocumentId
           ? [...queries, Query.cursorAfter(lastDocumentId)]
@@ -85,6 +92,7 @@ export function CallerPrvoider(props) {
         lastDocumentId = documents[documents.length - 1].$id;
       }
 
+      // Set fetched documents and count
       setFetchedDocuments(allDocuments);
       setCount(allDocuments.length);
     } catch (error) {

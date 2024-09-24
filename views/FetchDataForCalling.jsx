@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   FlatList,
   Text,
@@ -12,9 +12,10 @@ import {
 } from "react-native";
 import { useCaller } from "../contexts/CallerContext";
 // import { useUser } from "../contexts/UserContext";
-import { Button, Checkbox, Badge, Chip } from "react-native-paper";
+import { Button, RadioButton, Badge, Chip } from "react-native-paper";
 import { Picker } from "@react-native-picker/picker";
 import Toast from "react-native-toast-message";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function DataFetchingScreen({ navigation }) {
   // const user = useUser();
@@ -30,8 +31,7 @@ export default function DataFetchingScreen({ navigation }) {
   const [buildings, setBuildings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [buttondisable, setButtondisable] = useState(false);
-  //const [filterAll, setFilterAll] = useState(true);
-  //const [filterNoAnswer, setFilterNoAnswer] = useState(false);
+  const [filter, set_filter] = useState("");
 
   const handleDivisionChange = (itemValue) => {
     setDivision(itemValue);
@@ -170,7 +170,7 @@ export default function DataFetchingScreen({ navigation }) {
       if (division === "" || ward === "" || area === "" || building === "") {
         showToast();
       } else {
-        await fetchlist(division, ward, area, building);
+        await fetchlist(division, ward, area, building, filter);
       }
     } catch (error) {
       console.error(error.message);
@@ -178,6 +178,12 @@ export default function DataFetchingScreen({ navigation }) {
       setButtondisable(false);
     }
   }
+
+  useFocusEffect(
+    useCallback(() => {
+      getlist();
+    }, [division, ward, area, building, filter])
+  );
 
   if (loading) {
     return (
@@ -271,31 +277,78 @@ export default function DataFetchingScreen({ navigation }) {
           </View>
         </View>
 
-        {/* <Text className="text-xs font-bold px-5 py-2 text-red-500">Filters:</Text> */}
+        <Text className="text-xs font-bold px-5 py-2 text-red-500">
+          Filters:
+        </Text>
 
-        {/* <View className="flex flex-row items-center justify-around">
-          <Checkbox.Item
-            label="All"
-            status={filterAll ? 'checked' : 'unchecked'}
-            onPress={() => {
-              setFilterAll(true);
-              fetchlist();
-            }}
-          />
-          <Checkbox.Item label="Completed" status="unchecked" />
-          <Checkbox.Item label="Recall" status="unchecked" />
+        <View className="flex flex-row items-center justify-between mb-2 p-3">
+          <RadioButton.Group
+            onValueChange={(filter) => set_filter(filter)}
+            value={filter}
+          >
+            <View className="flex flex-row items-center justify-around">
+              <View className="flex flex-row items-center">
+                <Text>All</Text>
+                <RadioButton value="" />
+              </View>
+              <View className="flex flex-row items-center justify-around">
+                <Text>Completed</Text>
+                <RadioButton value="complete" />
+              </View>
+            </View>
+          </RadioButton.Group>
+
+          <RadioButton.Group
+            onValueChange={(filter) => set_filter(filter)}
+            value={filter}
+          >
+            <View className="flex flex-row items-center ">
+              <View className="flex flex-row items-center justify-around">
+                <Text>No ans.</Text>
+                <RadioButton value="no_answer" />
+              </View>
+              <View className="flex flex-row items-center justify-around">
+                <Text>Recall</Text>
+                <RadioButton value="recall" />
+              </View>
+            </View>
+          </RadioButton.Group>
         </View>
-        <View className="flex flex-row items-center justify-around">
-          <Checkbox.Item label="Decline" status="unchecked" />
-          <Checkbox.Item
-            label="No answer"
-            status={filterNoAnswer ? 'checked' : 'unchecked'}
-            onPress={() => {
-              setFilterNoAnswer(true);
-              fetchlist();
-            }}
-          />
-        </View> */}
+
+        <View className="flex flex-row items-center justify-between mb-3 p-3">
+          <RadioButton.Group
+            onValueChange={(filter) => set_filter(filter)}
+            value={filter}
+          >
+            <View className="flex flex-row items-center ">
+              <View className="flex flex-row items-center">
+                <Text>Decline</Text>
+                <RadioButton value="decline" />
+              </View>
+              <View className="flex flex-row items-center">
+                <Text>Wrong no.</Text>
+                <RadioButton value="wrong_number" />
+              </View>
+            </View>
+          </RadioButton.Group>
+
+          <RadioButton.Group
+            onValueChange={(filter) => set_filter(filter)}
+            value={filter}
+          >
+            <View className="flex flex-row items-center ">
+              <View className="flex flex-row items-center">
+                <Text>Busy</Text>
+                <RadioButton value="busy" />
+              </View>
+
+              <View className="flex flex-row items-center">
+                <Text>Switch off</Text>
+                <RadioButton value="switch_off" />
+              </View>
+            </View>
+          </RadioButton.Group>
+        </View>
 
         <Button
           icon="database-search-outline"
@@ -307,10 +360,6 @@ export default function DataFetchingScreen({ navigation }) {
         >
           Search
         </Button>
-
-        {/*  <Text className="text-xs font-bold text-red-500 px-5 pt-2">
-          Documents fetched: {count}
-        </Text> */}
 
         <Text className="text-xs font-bold px-5 py-2 text-red-500">
           Surveys: {count}

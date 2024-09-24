@@ -17,6 +17,7 @@ import { useUser } from "../contexts/UserContext";
 import * as Clipboard from "expo-clipboard";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Toast from "react-native-toast-message";
+//import { getlist } from "./FetchDataForCalling";
 
 export default function DocumentDetailScreen({ route, navigation }) {
   const { survey } = route.params;
@@ -376,7 +377,9 @@ export default function DocumentDetailScreen({ route, navigation }) {
       voterPoll: familyheadvoterpoll,
       voterPollArea: familyheadvoterpoll,
     };
-    setVerification(true);
+    if (callingStatus == "complete") {
+      setVerification(true);
+    }
     //console.log(DOCUMENT_ID);
     //console.log(VERFICATIONEMPLOYEEID)
 
@@ -394,7 +397,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
 
     const updatedDate = currentdate();
     setUpdatedate(updatedDate);
-    console.log(updatedDate);
+    //console.log(updatedDate);
 
     const DATA = {
       familyhead: JSON.stringify(updatedfamilydata),
@@ -428,6 +431,8 @@ export default function DocumentDetailScreen({ route, navigation }) {
       setButtondisable(false);
     } else {
       if (await update(DOCUMENT_ID, DATA)) setButtondisable(false);
+      navigation.goBack();
+      // await getlist();
     }
 
     setButtondisable(false);
