@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { Query } from "react-native-appwrite";
 import { toast } from "../lib/toast";
-import { databases } from "../lib/appwrite";
+import { databases, account } from "../lib/appwrite";
 import Toast from "react-native-toast-message";
 
 const DATABASE_ID = "66502c6e0015d7be8526";
@@ -37,6 +37,8 @@ export function CallerPrvoider(props) {
   const [nmbirthdatecount, setNmbirthdatecount] = useState(0);
   const [khopolibirthdatecount, setKhopolibirthdatecount] = useState(0);
 
+  // const [employeeName, setEmployeeName] = useState("");
+
   useEffect(() => {
     const currentdate = function () {
       const date = new Date();
@@ -47,6 +49,16 @@ export function CallerPrvoider(props) {
     //console.log(updatedDate)
     currentdate();
   });
+
+  /*   async function get_employee_details(employee_id) {
+    try {
+      const response = await account.get(employee_id);
+      console.log(`employee response ${response.name}`);
+      setEmployeeName(response.name);
+    } catch (error) {
+      console.log(`error getting user ${error}`);
+    }
+  } */
 
   async function fetchlist(division, ward, area, building, calling_status) {
     try {

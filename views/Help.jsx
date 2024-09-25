@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
-import { View, TouchableOpacity, SafeAreaView, ScrollView } from "react-native";
+import React from "react";
+import { View, TouchableOpacity, SafeAreaView } from "react-native";
 import { Text, Icon } from "react-native-paper";
+import Constants from "expo-constants";
 import * as Application from "expo-application";
-import appConfig from "../app.config";
 
 const Help = () => {
+  const app_version = Application.nativeApplicationVersion;
+  const app_name = Application.applicationName;
   return (
     <SafeAreaView className="flex-1 p-3">
       <Text className="text-xs font-bold px-5 ">Color scheme:</Text>
@@ -71,11 +73,19 @@ const Help = () => {
         </View>
       </View>
 
-      <Text className="text-xs font-bold px-5 mt-2.5">App Version</Text>
+      <Text className="text-xs font-bold px-5 mt-2.5">App version</Text>
       <View className=" bg-white border border-slate-200 m-5 rounded-xl">
         <TouchableOpacity className="border-b border-slate-200 flex flex-row items-center px-3">
           <Icon source="information" size={20} />
-          <Text className="p-5 font-semibold">{appConfig.version}</Text>
+          <Text className="p-5 font-semibold text-black">{app_version}</Text>
+        </TouchableOpacity>
+      </View>
+
+      <Text className="text-xs font-bold px-5 mt-2.5">App name</Text>
+      <View className=" bg-white border border-slate-200 m-5 rounded-xl">
+        <TouchableOpacity className="border-b border-slate-200 flex flex-row items-center px-3">
+          <Icon source="information" size={20} />
+          <Text className="p-5 font-semibold text-black">{app_name}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

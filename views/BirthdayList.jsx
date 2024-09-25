@@ -36,13 +36,12 @@ const BirthdayList = () => {
     await Clipboard.setStringAsync(info);
   };
 
-
   const renderItem = useCallback(({ item }) => {
     const familyHeadData = JSON.parse(item.familyhead);
     let memberArray = [];
 
     const copy_birthday_info = async () => {
-      const info = `Name: ${familyHeadData.familyHeadName}, Address: ${item.roomNumber}, ${item.building}, ${item.area}, ${item.division}, DOB: ${familyHeadData.familyHeadBirthdate}`;
+      const info = `Name: ${familyHeadData.familyHeadName}, Address: ${item.roomNumber}, ${item.building}, ${item.area}, ${item.division}, DOB: ${familyHeadData.familyHeadBirthdate}, Phone: ${familyHeadData.familyHeadMobileNumber}`;
       await Clipboard.setStringAsync(info);
     };
 
@@ -61,17 +60,14 @@ const BirthdayList = () => {
       <View className="flex flex-row items-center justify-between my-2.5 w-full">
         <View className="w-4/5 bg-white p-2.5 rounded-md">
           {/* Family Head Information */}
+          <Text>Name: {familyHeadData.familyHeadName}</Text>
           <Text>
-            Name: {familyHeadData.familyHeadName}
+            Add: {item.roomNumber}, {item.building}, {item.area},{" "}
+            {item.division}
           </Text>
-            <Text>
-            Add: {item.roomNumber}, {item.building}, {item.area}, {item.division}
-            </Text>
-            <Text>
-            DOB: {familyHeadData.familyHeadBirthdate}
-          </Text>
+          <Text>DOB: {familyHeadData.familyHeadBirthdate}</Text>
 
-
+          <Text>Phone: {familyHeadData.familyHeadMobileNumber}</Text>
 
           {/* Render Members */}
           {memberArray.length > 0 &&
@@ -119,7 +115,6 @@ const BirthdayList = () => {
       </View>
     );
   }, []);
-
 
   useEffect(() => {
     const getjsondata = async () => {

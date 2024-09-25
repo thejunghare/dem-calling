@@ -2,7 +2,7 @@
   "cli": {
     "version": ">= 11.0.2",
     "promptToConfigurePushNotifications": false,
-    "appVersionSource": "remote"
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -13,7 +13,7 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }     
+      }
     },
     "production": {
       "autoIncrement": true

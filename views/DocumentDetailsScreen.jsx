@@ -98,6 +98,10 @@ export default function DocumentDetailScreen({ route, navigation }) {
     parseMembers();
   }, [survey.members]);
 
+  /*  useEffect(() => {
+    get_employee_details(survey.employeeId);
+  }); */
+
   const parseMembers = () => {
     try {
       const parsedMembers = JSON.parse(survey.members);
@@ -487,7 +491,7 @@ export default function DocumentDetailScreen({ route, navigation }) {
 
           {/* <Text className="text-base ml-2">{survey.$updatedAt}</Text> */}
 
-          <View className="flex-row items-center">
+          <View className="flex-row mb-2 items-center">
             <Text className="text-base font-semibold ">Employee ID:</Text>
             <Text className="text-base ml-2">{survey.employeeId}</Text>
             <IconButton
@@ -497,6 +501,11 @@ export default function DocumentDetailScreen({ route, navigation }) {
               onPress={copyEmployeeIdToClipboard}
             />
           </View>
+
+          {/*  <View className="flex-row items-center">
+            <Text className="text-base font-semibold ">Employee name:</Text>
+            <Text className="text-base ml-2">{employeeName}</Text>
+          </View> */}
         </View>
 
         <Text className="text-xs font-bold px-3 pt-2">

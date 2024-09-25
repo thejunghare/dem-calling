@@ -2,7 +2,7 @@
   "expo": {
     "name": "Dem Calling",
     "slug": "dem-calling",
-    "version": "1.2.3",
+    "version": "1.2.5",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,11 +15,12 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 5,
+      "package": "com.thejunghare.demcalling",
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#ffffff"
-      },
-      "package": "com.thejunghare.demcalling"
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
